@@ -1,6 +1,7 @@
 # Maintainer: Konstantin Podsvirov <konstantin@podsvirov.pro>
 
 _realname=osgQtQuick
+pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}" "${MINGW_PACKAGE_PREFIX}-${_realname}-debug")
 _pkgver=v2.0.0-alpha-2
 pkgver=2.0.0.7
@@ -20,41 +21,45 @@ source=(https://github.com/podsvirov/osgqtquick/archive/v2.0.0-alpha-2.zip)
 md5sums=('SKIP')
 
 build() {
-  plain "No build step"
+
+  for builddir in {Release,Debug}-${MINGW_CHOST}; do
+    [[ -d ${builddir} ]] && rm -rf ${builddir}
+    mkdir -p ${builddir}
+    pushd ${builddir}
+      [[ "${builddir%-${MINGW_CHOST}}" == "Release" ]] && {
+        local _opts="-DosgQtQuick_BUILD_DOCS:BOOL=ON"
+      } || {
+        local _opts="-DosgQtQuick_BUILD_DOCS:BOOL=OFF"
+      }
+
+      msg "Building ${builddir%-${MINGW_CHOST}} version..."
+
+      MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+      COLLADA_DIR=${MINGW_PREFIX} \
+      ${MINGW_PREFIX}/bin/cmake.exe \
+        -G"MSYS Makefiles" \
+        -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+        -DCMAKE_BUILD_TYPE=${builddir%-${MINGW_CHOST}} \
+        ${_opts} \
+        ../osgqtquick-2.0.0-alpha-2
+
+      make
+    popd
+  done
 }
 
 package_release() {
-  provides=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-  conflicts=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-
-  [[ -d ${srcdir}/build-release ]] && rm -rf ${srcdir}/build-release
-  mkdir -p ${srcdir}/build-release && cd ${srcdir}/build-release
-
-  ${MINGW_PREFIX}/bin/cmake.exe \
-    -G"MSYS Makefiles" \
-    -DCMAKE_INSTALL_PREFIX:PATH=${pkgdir}${MINGW_PREFIX} \
-    -DCMAKE_BUILD_TYPE=Release \
-    -DosgQtQuick_BUILD_DOCS:BOOL=ON \
-    ../osgqtquick-2.0.0-alpha-2
-
-  make install
+  cd Release-${MINGW_CHOST}
+  make DESTDIR=${pkgdir} -j1 install
 }
 
 package_debug() {
-  depends=("${MINGW_PACKAGE_PREFIX}-OpenSceneGraph-debug")
-  provides=("${MINGW_PACKAGE_PREFIX}-${_realname}-debug")
-  conflicts=("${MINGW_PACKAGE_PREFIX}-${_realname}-debug")
+  depends=("${MINGW_PACKAGE_PREFIX}-${_realname}=$pkgver")
+  options=('staticlibs' '!strip')
+  pkgdesc="OpenSceneGraph QML Modules (debug) (mingw-w64)"
 
-  [[ -d ${srcdir}/build-debug ]] && rm -rf ${srcdir}/build-debug
-  mkdir -p ${srcdir}/build-debug && cd ${srcdir}/build-debug
-
-  ${MINGW_PREFIX}/bin/cmake.exe \
-    -G"MSYS Makefiles" \
-    -DCMAKE_INSTALL_PREFIX:PATH=${pkgdir}${MINGW_PREFIX} \
-    -DCMAKE_BUILD_TYPE=Debug \
-    ../osgqtquick-2.0.0-alpha-2
-
-  make install
+  cd Debug-${MINGW_CHOST}
+  make DESTDIR=${pkgdir} -j1 install
 
   rm -rf ${pkgdir}${MINGW_PREFIX}/include
   rm -rf ${pkgdir}${MINGW_PREFIX}/lib/cmake/osgQtQuick/osgQtQuickConfig.cmake
