@@ -3,12 +3,14 @@
 _realname=openscad
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=2015.03
-pkgrel=2
+_pkgver=2015.03
+_pkgrel=3
+pkgver=${_pkgver}.${_pkgrel}
+pkgrel=1
 pkgdesc="The programmers solid 3D CAD modeller (mingw-w64)"
 arch=('any')
 license=("GPL2")
-url="http://openscad.org/"
+url="https://openscad.org/"
 depends=("${MINGW_PACKAGE_PREFIX}-qt5"
          "${MINGW_PACKAGE_PREFIX}-boost"
          "${MINGW_PACKAGE_PREFIX}-cgal"
@@ -19,29 +21,29 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-gcc"
              "${MINGW_PACKAGE_PREFIX}-eigen3"
              "${MINGW_PACKAGE_PREFIX}-imagemagick")
 options=(!strip staticlibs !buildflags)
-source=("http://files.openscad.org/${_realname}-${pkgver}.src.tar.gz")
-sha256sums=('68ce08adc9e90c606ad948fe0f3405ce62b03b6bf34c45dd3dfc6b20c1846182')
+source=("http://files.openscad.org/${_realname}-${_pkgver}-${_pkgrel}.src.tar.gz")
+sha256sums=('5d2a7d83c32f4201ee0d17445a36baccaebc0bc7facd009fc8dd86ee537c5a36')
 
 prepare() {
-  cd "${srcdir}/${_realname}-${pkgver}"
+  cd "${srcdir}/${_realname}-${_pkgver}-${_pkgrel}"
   rm -f libraries/MCAD/*.py
 }
 
 build() {
-  cd ${srcdir}/${_realname}-${pkgver}
+  cd ${srcdir}/${_realname}-${_pkgver}-${_pkgrel}
   BOOSTDIR=${MINGW_PREFIX} \
   CGALDIR=${MINGW_PREFIX} \
   EIGENDIR=${MINGW_PREFIX} \
   GLEWDIR=${MINGW_PREFIX} \
   OPENCSGDIR=${MINGW_PREFIX} \
-  ${MINGW_PREFIX}/bin/qmake CONFIG+=release PREFIX="${pkgdir}${MINGW_PREFIX}" VERSION="${pkgver}"
+  ${MINGW_PREFIX}/bin/qmake CONFIG+=release PREFIX="${pkgdir}${MINGW_PREFIX}" VERSION="${_pkgver}-${_pkgrel}"
 
   make -j1
   convert "icons/${_realname}.png" -resize 128x128\> "icons/${_realname}-128.png"
 }
 
 package() {
-  cd ${srcdir}/${_realname}-${pkgver}
+  cd ${srcdir}/${_realname}-${_pkgver}-${_pkgrel}
   make INSTALL_ROOT= install
   install -Dm644 "icons/${_realname}.xml" "${pkgdir}${MINGW_PREFIX}/share/mime/packages/${_realname}.xml"
 }
