@@ -1,0 +1,412 @@
+# Maintainer: Konstantin Podsvirov <konstantin@podsvirov.pro>
+
+_realname=texlive-bin
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}") # "${MINGW_PACKAGE_PREFIX}-libsynctex")
+pkgver=2020.54586
+pkgrel=1
+license=('GPL')
+arch=('any')
+makedepends=("${MINGW_PACKAGE_PREFIX}-cairo"
+             "${MINGW_PACKAGE_PREFIX}-pixman"
+             "${MINGW_PACKAGE_PREFIX}-graphite2"
+             #"${MINGW_PACKAGE_PREFIX}-t1lib"
+             #"${MINGW_PACKAGE_PREFIX}-gd"
+             "${MINGW_PACKAGE_PREFIX}-poppler"
+             "${MINGW_PACKAGE_PREFIX}-libsigsegv"
+             "${MINGW_PACKAGE_PREFIX}-zziplib"
+             "${MINGW_PACKAGE_PREFIX}-libpng"
+             "${MINGW_PACKAGE_PREFIX}-libjpeg"
+             "${MINGW_PACKAGE_PREFIX}-freetype"
+             "${MINGW_PACKAGE_PREFIX}-icu"
+             "${MINGW_PACKAGE_PREFIX}-harfbuzz"
+             #"${MINGW_PACKAGE_PREFIX}-harfbuzz-icu"
+             "${MINGW_PACKAGE_PREFIX}-gmp"
+             "${MINGW_PACKAGE_PREFIX}-mpfr"
+             "${MINGW_PACKAGE_PREFIX}-potrace"
+             "${MINGW_PACKAGE_PREFIX}-libpaper"
+             "${MINGW_PACKAGE_PREFIX}-perl"
+             #"${MINGW_PACKAGE_PREFIX}-clisp" # reauired for xindy
+             "${MINGW_PACKAGE_PREFIX}-ffcall"
+             #"${MINGW_PACKAGE_PREFIX}-libxcrypt"
+)
+url="https://tug.org/texlive/"
+_commit=8e5e0e89d413d09cca133c8966d1a3af8a2ac440 # svn://tug.org/texlive/trunk/Build/source@54586
+_srcname="texlive-source-${_commit}"
+source=("${_srcname}.tar.gz"::"https://github.com/Tex-Live/texlive-source/archive/${_commit}.tar.gz")
+sha256sums=('9648c56f9eb44778310961e26bc787a64973902952b8f81186c57a33850b9489')
+
+prepare() {
+  cd "$srcdir/${_srcname}"
+
+  # t4ht expects to be un /usr/share/texmf/bin/t4ht (FS#27251)
+  sed -i s/SELFAUTOPARENT/TEXMFROOT/ texk/tex4htk/t4ht.c
+
+  # pdftex poppler compatibility
+  cp -pv texk/web2c/pdftexdir/pdftoepdf{-poppler0.86.0,}.cc
+  cp -pv texk/web2c/pdftexdir/pdftosrc{-poppler0.83.0,}.cc
+}
+
+build() {
+  [[ -d "${srcdir}/build-${CARCH}" ]] && rm -rf "${srcdir}/build-${CARCH}"
+  cp -rf "${srcdir}/${_srcname}" "${srcdir}/build-${CARCH}" && cd "${srcdir}/build-${CARCH}"
+  #cd "$srcdir/build-${CARCH}"
+
+  #############################################################
+  ### configure
+  mkdir -p Work
+  cd Work
+  echo "--> Initial configuration..."
+  # we use temporary prefix to avoid messing the existing
+  # $pkgdir/usr/share/texmf tree
+  ../configure --prefix=${MINGW_PREFIX} -C \
+    --sysconfdir=${MINGW_PREFIX}/etc \
+    --datarootdir=${MINGW_PREFIX}/share \
+    --datadir=${MINGW_PREFIX}/share \
+    --mandir=${MINGW_PREFIX}/share/man \
+    --disable-native-texlive-build \
+    --with-banner-add="/MSYS2" \
+    --disable-multiplatform \
+    --disable-dialog \
+    --disable-psutils \
+    --disable-t1utils \
+    --disable-bibtexu \
+    --disable-xz \
+    --enable-shared \
+    --disable-static \
+    --with-system-zlib \
+    --with-system-zziplib \
+    --with-system-pnglib \
+    --with-system-ncurses \
+    --with-system-t1lib \
+    --with-system-poppler \
+    --with-system-xpdf \
+    --with-system-freetype2 \
+    --with-system-pixman \
+    --with-system-cairo \
+    --with-system-harfbuzz \
+    --with-system-graphite \
+    --with-system-icu \
+    --with-system-gmp \
+    --with-system-mpfr \
+    --with-system-potrace \
+    --with-system-libpaper \
+    --with-freetype2-libdir=${MINGW_PREFIX}/lib \
+    --with-freetype2-include=${MINGW_PREFIX}/include/freetype2 \
+    --with-xdvi-x-toolkit=xaw \
+    --disable-dump-share \
+    --disable-aleph \
+    --disable-luatex \
+    --disable-luajittex \
+    --disable-luahbtex \
+    --disable-luajithbtex \
+    --with-clisp-runtime=default \
+    --disable-xindy --disable-xindy-rules --disable-xindy-docs
+    #--with-system-gd \
+    #--enable-luatex \
+    #--enable-xindy
+  #############################################################
+  ### make
+  echo "-------------------------------------------------------"
+  echo "--> Building the whole beast ..."
+  echo "-------------------------------------------------------"
+  make
+}
+
+package_libsynctex() {
+  pkgdesc='Library for synchronization between TeX files and resulting file'
+  depends=('glibc' 'zlib')
+
+  cd "${srcdir}/build-${CARCH}/Work"
+  make -C texk/web2c DESTDIR="${pkgdir}" \
+    install-data-am install-libLTLIBRARIES
+}
+
+#package_texlive-bin() {
+package() {
+  pkgdesc="TeX Live binaries"
+  #depends=('cairo' 'pixman' 'graphite' 't1lib' 'gd' 'poppler'
+  #         'libsigsegv' 'zziplib' 'libpng' 'libjpeg' 'freetype2' 'libxcrypt'
+  #         'icu' 'harfbuzz' 'harfbuzz-icu' 'gmp' 'mpfr' 'potrace' 'libpaper'
+  #         'libsynctex')
+  #provides=('lcdf-typetools' 'kpathsea' 'xindy')
+  #optdepends=('ed: for texconfig'
+  #            'biber: for bibliography processing')
+  #options=('!strip')
+
+  cd "$srcdir/build-${CARCH}"
+
+  #############################################################
+  ### install
+  # fixes for xindy
+  find utils/xindy -name Makefile -exec sed -i -e "s|^prefix =.\+$|prefix = $pkgdir/usr|" -e "s|^mandir =.\+$|mandir = \${prefix}/share/man|" -e "s|^datadir =.\+$|datadir = \${datarootdir}/texmf|" -e "s|^docdir =.\+$|docdir = \${datadir}/doc/xindy|" '{}' \;
+
+  echo "-------------------------------------------------------"
+  echo "--> Proceeding with make install ..."
+  echo "-------------------------------------------------------"
+  cd Work
+  make DESTDIR="${pkgdir}" texmf="${pkgdir}${MINGW_PREFIX}"/share/texmf install
+  #rm -rf "${pkgdir}${MINGW_PREFIX}"/{texmf,share/texmf-dist}
+
+  ## symlink engines by hand. texlinks has moved to texlive-core...
+  #mkdir -p "${pkgdir}${MINGW_PREFIX}"/bin
+  #cd "${pkgdir}${MINGW_PREFIX}"/bin
+  #cp eptex.exe platex.exe
+  #cp euptex.exe uplatex.exe
+  ##cp luatex.exe dvilualatex.exe
+  ##cp luatex.exe dviluatex.exe
+  ##cp luahbtex.exe lualatex.exe
+  #cp pdftex.exe amstex.exe
+  #cp pdftex.exe cslatex.exe
+  #cp pdftex.exe csplain.exe
+  #cp pdftex.exe eplain.exe
+  #cp pdftex.exe etex.exe
+  #cp pdftex.exe jadetex.exe
+  #cp pdftex.exe latex.exe
+  #cp tex.exe lollipop.exe
+  #cp pdftex.exe mex.exe
+  #cp pdftex.exe mllatex.exe
+  #cp pdftex.exe mltex.exe
+  #cp pdftex.exe pdfetex.exe
+  #cp pdftex.exe pdfcslatex.exe
+  #cp pdftex.exe pdfcsplain.exe
+  #cp pdftex.exe pdfjadetex.exe
+  #cp pdftex.exe pdflatex.exe
+  #cp pdftex.exe pdfmex.exe
+  #cp pdftex.exe pdfxmltex.exe
+  #cp pdftex.exe texsis.exe
+  #cp pdftex.exe utf8mex.exe
+  #cp pdftex.exe xmltex.exe
+  #cp xetex.exe xelatex.exe
+
+  #############################################################
+  # remove dangling symlinks
+  _bibtexextra_scripts="
+bbl2bib
+bib2gls
+bibdoiadd
+bibexport
+bibmradd
+biburl2doi
+bibzbladd
+convertgls2bib
+listbib
+ltx2crossrefxml
+multibibliography
+urlbst
+"
+  _core_scripts="
+a2ping
+a5toa4
+adhocfilelist
+afm2afm
+allcm
+allec
+allneeded
+arara
+arlatex
+autoinst
+bundledoc
+checkcites
+checklistings
+chklref
+chkweb
+cjk-gs-integrate
+cluttex
+cllualatex
+clxelatex
+context
+contextjit
+ctanbib
+ctanify
+ctanupload
+ctan-o-mat
+de-macro
+depythontex
+deweb
+dosepsbin
+dtxgen
+dvi2fax
+dviasm
+dviinfox
+dvired
+e2pall
+epstopdf
+findhyph
+fmtutil
+fmtutil-sys
+fmtutil-user
+fontinst
+fragmaster
+ht
+htcontext
+htlatex
+htmex
+httex
+httexi
+htxelatex
+htxetex
+installfont-tl
+jfmutil
+ketcindy
+kpsepath
+kpsetool
+kpsewhere
+kpsexpand
+latex-git-log
+latex-papersize
+latex2man
+latex2nemeth
+latexdef
+latexdiff
+latexdiff-vc
+latexfileversion
+latexindent
+latexmk
+latexpand
+latexrevise
+listings-ext.sh
+ltxfileinfo
+ltximg
+luaotfload-tool
+luatools
+lwarpmk
+make4ht
+match_parens
+mf2pt1
+mk4ht
+mkjobtexmf
+mkt1font
+mktexfmt
+mktexlsr
+mktexmf
+mktexpk
+mktextfm
+mptopdf
+mtxrun
+mtxrunjit
+ot2kpx
+pamphletangler
+pdfatfi
+pdfbook2
+pdfcrop
+pdfjam
+pdflatexpicscale
+pdftex-quiet
+pdfxup
+pfarrei
+pkfix
+pkfix-helper
+ps2eps
+ps2frag
+pslatex
+purifyeps
+pythontex
+repstopdf
+rpdfcrop
+rungs
+simpdftex
+srcredact
+sty2dtx
+tex4ebook
+texconfig
+texconfig-dialog
+texconfig-sys
+texcount
+texdef
+texdiff
+texdirflatten
+texdoc
+texdoctk
+texexec
+texfot
+texhash
+texindy
+texlinks
+texliveonfly
+texloganalyser
+texmfstart
+texosquery
+texosquery-jre5
+texosquery-jre8
+texplate
+thumbpdf
+tlcockpit
+tlshell
+typeoutfileinfo
+updmap
+updmap-sys
+updmap-user
+vpl2ovp
+vpl2vpl
+xhlatex
+xindex
+xindy
+"
+  _games_scripts="rubikrotation"
+  _humanities_scripts="diadia"
+  _langcyrillic_scripts="rubibtex rumakeindex"
+  _langextra_scripts="ebong"
+  _langgreek_scripts="mkgrkindex"
+  _langjapanese_scripts="convbkmk ptex2pdf
+kanji-fontmap-creator
+kanji-config-updmap
+kanji-config-updmap-sys
+kanji-config-updmap-user
+"
+  _langkorean_scripts="jamo-normalize komkindex ttf2kotexfont"
+  _latexextra_scripts="
+authorindex
+exceltex
+l3build
+makedtx
+makeglossaries
+makeglossaries-lite
+pdfannotextractor
+perltex
+ps4pdf
+splitindex
+svn-multi
+vpe
+webquiz
+wordcount
+yplan"
+  _music_scripts="lily-glyph-commands lily-image-commands lily-rebuild-pdfs
+m-tx musixtex musixflx pmxchords"
+  _pictures_scripts="
+cachepic
+epspdf
+epspdftk
+fig4latex
+getmapdl
+mathspic
+mkpic
+pn2pdf"
+  _pstricks_scripts="pedigree pst2pdf"
+  _science_scripts="pygmentex ulqda"
+  #for s in \
+  #  ${_bibtexextra_scripts} \
+  #  ${_core_scripts}        \
+  #  ${_games_scripts}       \
+  #  ${_htmlxml_scripts}     \
+  #  ${_humanities_scripts}   \
+  #  ${_langcyrillic_scripts} \
+  #  ${_langextra_scripts}    \
+  #  ${_langgreek_scripts}    \
+  #  ${_langjapanese_scripts} \
+  #  ${_langkorean_scripts} \
+  #  ${_latexextra_scripts} \
+  #  ${_music_scripts}      \
+  #  ${_pictures_scripts}   \
+  #  ${_pstricks_scripts}   \
+  #  ${_science_scripts}    \
+  #  tlmgr; do
+  # ! readlink -e "${pkgdir}${MINGW_PREFIX}"/bin/$s && echo "rm? ${pkgdir}${MINGW_PREFIX}"/bin/$s
+  #done
+  ###################################################################
+
+  # remove libsynctex
+  #rm -f "${pkgdir}${MINGW_PREFIX}"/include/synctex/*
+  #rm -f "${pkgdir}${MINGW_PREFIX}"/lib/libsynctex.*
+  #rm -f "${pkgdir}${MINGW_PREFIX}"/lib/pkgconfig/synctex.pc
+  #rm -f "${pkgdir}${MINGW_PREFIX}"/share/man/man*/synctex.*
+}
