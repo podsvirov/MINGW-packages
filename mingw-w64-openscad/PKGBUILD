@@ -4,7 +4,7 @@ _realname=openscad
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
 pkgver=2021.01
-pkgrel=1
+pkgrel=2
 pkgdesc="The programmers solid 3D CAD modeller (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64')
@@ -23,7 +23,8 @@ depends=("${MINGW_PACKAGE_PREFIX}-qt5"
          "${MINGW_PACKAGE_PREFIX}-libzip"
          "${MINGW_PACKAGE_PREFIX}-opencsg"
          "${MINGW_PACKAGE_PREFIX}-qscintilla"
-         "${MINGW_PACKAGE_PREFIX}-shared-mime-info")
+         "${MINGW_PACKAGE_PREFIX}-shared-mime-info"
+         "${MINGW_PACKAGE_PREFIX}-lib3mf")
 makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-gcc"
              "${MINGW_PACKAGE_PREFIX}-eigen3"
@@ -38,35 +39,35 @@ prepare() {
 }
 
 build() {
-  msg2 "Will be in future"
-  # [[ -d build-${MINGW_CHOST} ]] && rm -r build-${MINGW_CHOST}
-  # mkdir -p build-${MINGW_CHOST} && cd build-${MINGW_CHOST}
+  #msg2 "Will be in future"
+  [[ -d build-${MINGW_CHOST} ]] && rm -r build-${MINGW_CHOST}
+  mkdir -p build-${MINGW_CHOST} && cd build-${MINGW_CHOST}
   
-  # MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
-  # ${MINGW_PREFIX}/bin/cmake.exe \
-    # -G"MSYS Makefiles" \
-    # -DCMAKE_PREFIX_PATH=${MINGW_PREFIX} \
-    # -DCMAKE_BUILD_TYPE=Release \
-    # ../${_realname}-${pkgver}
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+  ${MINGW_PREFIX}/bin/cmake.exe \
+    -G"MSYS Makefiles" \
+    -DCMAKE_PREFIX_PATH=${MINGW_PREFIX} \
+    -DCMAKE_BUILD_TYPE=Release \
+    ../${_realname}-${pkgver}
 }
 
 package() {
-  cd ${srcdir}/${_realname}-${pkgver}
-  convert "${srcdir}/${_realname}-${pkgver}/icons/${_realname}.png" -resize 128x128\> "${srcdir}/${_realname}-${pkgver}/icons/${_realname}-128.png"
-  BOOSTDIR=${MINGW_PREFIX} \
-  CGALDIR=${MINGW_PREFIX} \
-  EIGENDIR=${MINGW_PREFIX} \
-  GLEWDIR=${MINGW_PREFIX} \
-  OPENCSGDIR=${MINGW_PREFIX} \
-  ${MINGW_PREFIX}/bin/qmake CONFIG+=release PREFIX="${pkgdir}${MINGW_PREFIX}" VERSION="${pkgver}"
+  #cd ${srcdir}/${_realname}-${pkgver}
+  #convert "${srcdir}/${_realname}-${pkgver}/icons/${_realname}.png" -resize 128x128\> "${srcdir}/${_realname}-${pkgver}/icons/${_realname}-128.png"
+  #BOOSTDIR=${MINGW_PREFIX} \
+  #CGALDIR=${MINGW_PREFIX} \
+  #EIGENDIR=${MINGW_PREFIX} \
+  #GLEWDIR=${MINGW_PREFIX} \
+  #OPENCSGDIR=${MINGW_PREFIX} \
+  #${MINGW_PREFIX}/bin/qmake CONFIG+=release PREFIX="${pkgdir}${MINGW_PREFIX}" VERSION="${pkgver}"
 
-  make
-  make INSTALL_ROOT= install
-  install -Dm644 "icons/${_realname}.xml" "${pkgdir}${MINGW_PREFIX}/share/mime/packages/${_realname}.xml"
-  install -Dm644 COPYING ${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/COPYING
+  #make
+  #make INSTALL_ROOT= install
+  #install -Dm644 "icons/${_realname}.xml" "${pkgdir}${MINGW_PREFIX}/share/mime/packages/${_realname}.xml"
+  #install -Dm644 COPYING ${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/COPYING
   
-  # cd build-${MINGW_CHOST}
-  # make DESTDIR=${pkgdir} install
-  # install -Dm644 ${srcdir}/${_realname}-${pkgver}/COPYING ${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/COPYING
+  cd build-${MINGW_CHOST}
+  make DESTDIR=${pkgdir} install
+  install -Dm644 ${srcdir}/${_realname}-${pkgver}/COPYING ${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/COPYING
 
 }
