@@ -4,11 +4,11 @@
 # as it doesnt contain reference for GdipFontFamilyCachedGenericSansSerif
 
 _realname=gnuplot
-_wx_basever=3.0
+_wx_basever=3.1
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=5.4.1
-pkgrel=5
+pkgver=5.4.2
+pkgrel=1
 pkgdesc="Plotting package which outputs to X11, PostScript, PNG, GIF, and others (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
@@ -27,7 +27,7 @@ depends=("${MINGW_PACKAGE_PREFIX}-cairo"
 options=('strip' 'staticlibs')
 source=("https://downloads.sourceforge.net/sourceforge/${_realname}/${_realname}-${pkgver}.tar.gz"
         "01-gnuplot.patch" )
-sha256sums=('6b690485567eaeb938c26936e5e0681cf70c856d273cc2c45fabf64d8bc6590e'
+sha256sums=('e57c75e1318133951d32a83bcdc4aff17fed28722c4e71f2305cfc2ae1cae7ba'
             'e0f81dce323abc88cd0f878939dcddd7a7830fd05d9c5f6abdf108879da42f66')
 
 
