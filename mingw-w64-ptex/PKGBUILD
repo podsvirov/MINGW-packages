@@ -3,14 +3,15 @@
 _realname=ptex
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=2.3.2
-pkgrel=2
+pkgver=2.4.1
+pkgrel=1
 pkgdesc="Per-Face Texture Mapping for Production Rendering (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
 url='https://ptex.us/'
 license=('APACHE')
 makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
+             "${MINGW_PACKAGE_PREFIX}-ninja"
              "${MINGW_PACKAGE_PREFIX}-doxygen"
              "${MINGW_PACKAGE_PREFIX}-gcc")
 depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
@@ -22,7 +23,7 @@ source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/wdas/${_realname}/a
         "0003-fix-export.patch"
         "0004-mingw-isfinite.patch"
         "0010-fallback-version-cmake.patch")
-sha256sums=('30aeb85b965ca542a8945b75285cd67d8e207d23dbb57fcfeaab587bb443402b'
+sha256sums=('664253b84121251fee2961977fe7cf336b71cd846dc235cd0f4e54a0c566084e'
             '4970dc32c355f930833fe72be38c570a557071785a726a59245541090d72c806'
             'b0d84847aa647165cc172bdf06968e94fe890b91b8fb7cd24bdf2d545d96306e'
             'bfae302d5a03db0123de8c7da1b2da6f9dacbadd7a67376b038ebaabbcdcbd38'
@@ -51,22 +52,22 @@ build() {
     extra_config+=("-DCMAKE_BUILD_TYPE=Debug")
   fi
 
-  [[ -d "${srcdir}"/build-${CARCH} ]] && rm -rf "${srcdir}"/build-${CARCH}
-  mkdir -p "${srcdir}"/build-${CARCH} && cd "${srcdir}"/build-${CARCH}
+  [[ -d "${srcdir}"/build-${MSYSTEM} ]] && rm -rf "${srcdir}"/build-${MSYSTEM}
+  mkdir -p "${srcdir}"/build-${MSYSTEM} && cd "${srcdir}"/build-${MSYSTEM}
 
   MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
     ${MINGW_PREFIX}/bin/cmake \
-      -G'MSYS Makefiles' \
+      -G"Ninja" \
       -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
       "${extra_config[@]}" \
       -DPTEX_BUILD_SHARED_LIBS=ON \
       -DPTEX_BUILD_STATIC_LIBS=ON \
       ../${_realname}-${pkgver}
 
-  make
+  cmake --build .
 }
 
 package() {
-  cd "${srcdir}"/build-${CARCH}
-  make install DESTDIR="${pkgdir}"
+  cd "${srcdir}"/build-${MSYSTEM}
+  DESTDIR="${pkgdir}" cmake --install .
 }
