@@ -3,7 +3,7 @@
 _realname=jsoncpp
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=1.9.4
+pkgver=1.9.5
 pkgrel=1
 pkgdesc="A C++ library for interacting with JSON (mingw-w64)"
 arch=('any')
@@ -16,7 +16,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-gcc"
 options=('staticlibs' '!strip' '!buildflags')
 source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/open-source-parsers/jsoncpp/archive/${pkgver}.tar.gz"
         001-library-name.patch)
-sha256sums=('e34a628a8142643b976c7233ef381457efad79468c67cb1ae0b83a33d7493999'
+sha256sums=('f409856e5920c18d0c2fb85276e24ee607d2a09b5e7d5f0a371368903c275da2'
             '72396ec75ec0013419c127fd0aef15149b150415658b8682fdedb91046c304b2')
 
 prepare() {
