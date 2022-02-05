@@ -4,8 +4,8 @@
 _realname=libuv
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=1.42.0
-pkgrel=3
+pkgver=1.43.0
+pkgrel=1
 pkgdesc="Cross-platform asynchronous I/O (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
@@ -17,12 +17,12 @@ options=('staticlibs' 'strip')
 source=(https://dist.libuv.org/dist/v${pkgver}/libuv-v${pkgver}.tar.gz{,.sign}
         "string-encoding-uv_os_gethostname.patch::https://github.com/libuv/libuv/commit/95f88f4.patch"
         "0001-winapi-fix-redefinition.patch")
-sha256sums=('43129625155a8aed796ebe90b8d4c990a73985ec717de2b2d5d3a23cfe4deb72'
+sha256sums=('90d72bb7ae18de2519d0cac70eb89c319351146b90cd3f91303a492707e693a4'
             'SKIP'
             '18e4c2af57254f0550c684d48b259b54f9bcad27b4286aad1d8c4e5ec0932fc5'
             '925567b88d690950af1201153df641cbf0a3161546da33bcc9a2ac215dc3fd6a')
 # PGP key IDs are available from https://github.com/libuv/libuv/blob/v1.x/MAINTAINERS.md
-validpgpkeys=('AEAD0A4B686767751A0E4AEF34A25FB128246514') # Jameson Nash <vtjnash@gmail.com>"
+validpgpkeys=('57353E0DBDAAA7E839B66A1AFF47D5E4AD8B4FDC') # Colin Ihrig <cjihrig@gmail.com>
 
 prepare() {
   cd "${srcdir}/${_realname}-v${pkgver}"
