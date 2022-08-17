@@ -6,7 +6,7 @@ pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
          "${MINGW_PACKAGE_PREFIX}-${_realname}-debug")
 _qtver=6.3.1
 pkgver=${_qtver/-/}
-pkgrel=1
+pkgrel=2
 arch=(any)
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
 url='https://www.qt.io'
@@ -16,6 +16,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
              "${MINGW_PACKAGE_PREFIX}-ninja"
              "${MINGW_PACKAGE_PREFIX}-qt6-declarative"
              "${MINGW_PACKAGE_PREFIX}-qt6-activeqt"
+             "${MINGW_PACKAGE_PREFIX}-litehtml"
              "${MINGW_PACKAGE_PREFIX}-clang"
              "${MINGW_PACKAGE_PREFIX}-clang-tools-extra"
              "${MINGW_PACKAGE_PREFIX}-cc"
@@ -72,6 +73,7 @@ package_qt6-tools() {
            $([[ ${MINGW_PACKAGE_PREFIX} != *-clang-* ]] || echo "${MINGW_PACKAGE_PREFIX}-clang"))
   optdepends=("${MINGW_PACKAGE_PREFIX}-qt6-declarative: for lupdate-qt6, qdoc-qt6 and qdistancefieldgenerator-qt6"
               "${MINGW_PACKAGE_PREFIX}-qt6-activeqt"
+              "${MINGW_PACKAGE_PREFIX}-litehtml: for assistant-qt6"
               "${MINGW_PACKAGE_PREFIX}-clang: for qdoc-qt6")
   groups=("${MINGW_PACKAGE_PREFIX}-qt6")
 
