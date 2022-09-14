@@ -1,0 +1,39 @@
+# Maintainer: Konstantin Podsvirov <konstantin@podsvirov.pro>
+
+_realname=search
+pkgbase=mingw-w64-python-pelican-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
+pkgver=1.0.1
+pkgrel=1
+pkgdesc="Pelican plugin that indexes content and enables static site searches (mingw-w64)"
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
+url="https://github.com/pelican-plugins/${_realname}"
+license=('LICENSE')
+depends=("${MINGW_PACKAGE_PREFIX}-python"
+         "${MINGW_PACKAGE_PREFIX}-pelican"
+         "${MINGW_PACKAGE_PREFIX}-stork")
+optdepends=("${MINGW_PACKAGE_PREFIX}-python-markdown")
+makedepends=("${MINGW_PACKAGE_PREFIX}-python-build"
+             "${MINGW_PACKAGE_PREFIX}-python-installer"
+             "${MINGW_PACKAGE_PREFIX}-python-poetry"
+             "${MINGW_PACKAGE_PREFIX}-python-markdown")
+source=("${_realname}-${pkgver}.tar.gz::${url}/archive/${pkgver}.tar.gz")
+sha256sums=('c9bdee8267038a98467c8348eb53033876f325b24f3236c886053910f959f9c6')
+
+build() {
+  msg "Python build for ${MSYSTEM}"
+  cd "${srcdir}"
+  cp -r "${_realname}-${pkgver}" "python-build-${MSYSTEM}" && cd "python-build-${MSYSTEM}"
+
+  ${MINGW_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
+}
+
+package() {
+  msg "Python install for ${MSYSTEM}"
+  cd "${srcdir}/python-build-${MSYSTEM}"
+
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    ${MINGW_PREFIX}/bin/python -m installer --prefix=${MINGW_PREFIX} \
+    --destdir="${pkgdir}" dist/*.whl
+}
