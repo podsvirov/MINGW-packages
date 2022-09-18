@@ -1,42 +1,56 @@
-# Maintainer:  Matheus Catarino <matheus-catarino@hotmail.com>
+# Maintainer:  Konstantin Podsvirov <konstantin@podsvirov.pro>
 
-pkgbase=mingw-w64-zig
-pkgname="${MINGW_PACKAGE_PREFIX}-zig"
-pkgver=0.7.1
-pkgrel=3
+_realname=zig
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=0.9.1
+pkgrel=1
 pkgdesc='Zig is a general-purpose programming language and toolchain for maintaining robust, optimal, and reusable software. (mingw-w64)'
 arch=('any')
-mingw_arch=()
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
 url='https://ziglang.org'
-license=(MIT)
+license=('MIT')
 makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
+             "${MINGW_PACKAGE_PREFIX}-llvm"
              "${MINGW_PACKAGE_PREFIX}-lld"
              )
 depends=("${MINGW_PACKAGE_PREFIX}-llvm"
          "${MINGW_PACKAGE_PREFIX}-clang"
          )
-source=("zig-${pkgver}.tar.gz::https://github.com/ziglang/zig/archive/${pkgver}.tar.gz")
-sha512sums=('ad0b36f7b40481aca03940adfd42d34a724922993fc29a23a80412dc087ca6ce4876a400dc9bb7da455564521a88ea205c218988759ff6c56251a08232bfa41a')
+source=("${_realname}-${pkgver}.tar.gz::https://github.com/ziglang/zig/archive/${pkgver}.tar.gz")
+sha256sums=('2a6ba6a72b9619b83dab77f5b6e2b6f0958bb0f85cded055be2c632386e0ff2d')
 
 build() {
-  cd ${srcdir}/zig-${pkgver}
-        MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
-        ${MINGW_PREFIX}/bin/cmake \
-        -G"MSYS Makefiles" \
-        -DCMAKE_CXX_COMPILER="clang++" \
-        -DCMAKE_C_COMPILER="clang" \
-        -DCMAKE_BUILD_TYPE=Release \
-        -DZIG_PREFER_CLANG_CPP_DYLIB=true \
-        -DZIG_TARGET_TRIPLE="x86_64-windows-gnu" \
-        -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
-        -B build-${MINGW_CHOST}
+  cd "${srcdir}/${_realname}-${pkgver}"
+  mkdir -p "${srcdir}/build-${MSYSTEM}" && cd "${srcdir}/build-${MSYSTEM}"
 
-  cmake --build build-${MINGW_CHOST} --config release --parallel
+  declare -a extra_config
+  if check_option "debug" "n"; then
+    extra_config+=("-DCMAKE_BUILD_TYPE=Release")
+  else
+    extra_config+=("-DCMAKE_BUILD_TYPE=Debug")
+  fi
+
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+    "${MINGW_PREFIX}"/bin/cmake.exe \
+      -G"Ninja" \
+      -DZIG_PREFER_CLANG_CPP_DYLIB=ON \
+      -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}" \
+      "${extra_config[@]}" \
+      ../${_realname}-${pkgver}
+
+      #-DBUILD_{SHARED,STATIC}_LIBS=ON \
+      #-DCMAKE_CXX_COMPILER="${MINGW_PREFIX}"/bin/clang++.exe \
+      #-DCMAKE_C_COMPILER="${MINGW_PREFIX}"/bin/clang.exe \
+      #-DZIG_TARGET_TRIPLE="x86_64-windows-gnu" \
+
+  "${MINGW_PREFIX}"/bin/cmake.exe --build .
 }
 
 package() {
-  cd ${srcdir}/zig-${pkgver}/build-${MINGW_CHOST}
+  cd "${srcdir}/${_realname}-${pkgver}/build-${MSYSTEM}"
 
-  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake --build . --target install
-  install -Dm644 "../LICENSE" "${pkgdir}${MINGW_PREFIX}/share/licenses/zig/LICENSE"
+  DESTDIR="${pkgdir}" "${MINGW_PREFIX}"/bin/cmake.exe --install .
+
+  install -Dm644 "${srcdir}/${_realname}-${pkgver}/LICENSE" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"
 }
