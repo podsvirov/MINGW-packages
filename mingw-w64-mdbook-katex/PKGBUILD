@@ -1,0 +1,63 @@
+# Maintainer: Konstantin Podsvirov <konstantin@podsvirov.pro>
+
+_realname=mdbook-katex
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=0.2.10
+pkgrel=1
+pkgdesc="A preprocessor for mdBook, rendering LaTex equations to HTML at build time (mingw-w64)"
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64')
+url="https://github.com/lzanini/mdbook-katex"
+license=('MIT')
+depends=("${MINGW_PACKAGE_PREFIX}-mdbook")
+makedepends=("${MINGW_PACKAGE_PREFIX}-rust")
+options=('staticlibs' 'strip')
+source=("${_realname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz")
+sha256sums=('d8cb8a0515d641ff846b22fce154c7cca927ec635664bce604e85b26fd6e36ee')
+
+prepare() {
+  cd "${srcdir}"
+  rm -rf "build-${MSYSTEM}" | true
+  cp -r "${_realname}-${pkgver}" "build-${MSYSTEM}"
+  cd "${srcdir}/build-${MSYSTEM}"
+
+  "${MINGW_PREFIX}/bin/cargo.exe" update
+
+  cp "${srcdir}/${_realname}-${pkgver}/Cargo.toml" .
+  cp "${srcdir}/${_realname}-${pkgver}/Cargo.lock" .
+
+  "${MINGW_PREFIX}/bin/cargo.exe" update \
+    --package mdbook@0.4.21 \
+    --aggressive
+
+  "${MINGW_PREFIX}/bin/cargo.exe" fetch \
+    --locked
+}
+
+build() {
+  msg "Cargo build for ${MSYSTEM}"
+  cd "${srcdir}/build-${MSYSTEM}"
+
+  "${MINGW_PREFIX}/bin/cargo.exe" build \
+    --release \
+    --locked
+}
+
+check() {
+  cd "${srcdir}/build-${MSYSTEM}"
+
+  "${MINGW_PREFIX}/bin/cargo.exe" test \
+    --release \
+    --locked
+}
+
+package() {
+  cd "${srcdir}/build-${MSYSTEM}"
+
+  install -Dm755 "target/release/${_realname}.exe" "${pkgdir}${MINGW_PREFIX}/bin/${_realname}.exe"
+  install -Dm644 "Cargo.toml" "${pkgdir}${MINGW_PREFIX}/share/${_realname}/Cargo.toml"
+  install -Dm644 "Cargo.lock" "${pkgdir}${MINGW_PREFIX}/share/${_realname}/Cargo.lock"
+  install -Dm644 "README.md" "${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}/README.md"
+  install -Dm644 "LICENSE" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"
+}
