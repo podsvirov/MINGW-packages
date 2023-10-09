@@ -1,0 +1,59 @@
+# Maintainer: Konstantin Podsvirov <konstantin@podsvirov.pro>
+
+_realname=cargo-edit
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=0.12.2
+pkgrel=1
+pkgdesc="Managing cargo dependencies from the command line (mingw-w64)"
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clangarm64' 'clang32')
+url="https://github.com/killercup/cargo-edit"
+license=('MIT' 'Apache')
+depends=("${MINGW_PACKAGE_PREFIX}-libgit2"
+         "${MINGW_PACKAGE_PREFIX}-libssh2"
+	 "${MINGW_PACKAGE_PREFIX}-openssl")
+makedepends=("${MINGW_PACKAGE_PREFIX}-rust"
+             "${MINGW_PACKAGE_PREFIX}-pkgconf")
+options=('staticlibs' 'strip')
+source=("${_realname}-${pkgver}.tar.gz::${url}/archive/v${pkgver}.tar.gz")
+sha256sums=('10c86ca7585852ce288a44608ef87c827f4b733a94eb847ab15735b823b30560')
+
+prepare() {
+  cd "${srcdir}/${_realname}-${pkgver}"
+
+  sed -i '/\"vendored-libgit2\"/d' Cargo.toml
+  "${MINGW_PREFIX}/bin/cargo.exe" fetch --locked
+}
+
+build() {
+  msg "Cargo build for ${MSYSTEM}"
+  cd "${srcdir}"
+  cp -r "${_realname}-${pkgver}" "build-${MSYSTEM}"
+  cd "build-${MSYSTEM}"
+
+  LIBSSH2_SYS_USE_PKG_CONFIG=1 "${MINGW_PREFIX}/bin/cargo.exe" build \
+    --release \
+    --locked
+}
+
+check() {
+  cd "${srcdir}/build-${MSYSTEM}"
+
+  LIBSSH2_SYS_USE_PKG_CONFIG=1 "${MINGW_PREFIX}/bin/cargo.exe" test \
+    --release \
+    --locked
+}
+
+package() {
+  cd "${srcdir}/build-${MSYSTEM}"
+
+  install -Dm755 \
+    "target/release/cargo-upgrade.exe" \
+    "target/release/cargo-set-version.exe" \
+    -t "${pkgdir}${MINGW_PREFIX}/bin"
+
+  install -Dm644 "README.md" "${pkgdir}${MINGW_PREFIX}/share/doc/${_realname}/README.md"
+  install -Dm644 "LICENSE" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"
+}
+
