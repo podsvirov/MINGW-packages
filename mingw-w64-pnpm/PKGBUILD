@@ -1,0 +1,57 @@
+# Maintainer: Konstantin Podsvirov <konstantin@podsvirov.pro>
+
+_realname=pnpm
+pkgbase=mingw-w64-${_realname}
+pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
+pkgver=8.10.2
+pkgrel=1
+pkgdesc="Fast, disk space efficient package manager (mingw-w64)"
+arch=('any')
+mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32')
+url="https://pnpm.io"
+license=("MIT")
+depends=("${MINGW_PACKAGE_PREFIX}-nodejs")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-sed"
+             "${MINGW_PACKAGE_PREFIX}-ninja")
+source=("${_realname}-${pkgver}.tar.gz::https://github.com/pnpm/pnpm/archive/v${pkgver}.tar.gz")
+noextract=("${_realname}-${pkgver}.tar.gz")
+sha256sums=('6f320c60db6a1cf3d567ac704ddbf51afb4e8c9e45ae33a597c7131669d9c29c')
+
+prepare() {
+  [[ -d "${_realname}-${pkgver}" ]] && rm -rf "${_realname}-${pkgver}"
+  export MSYS=winsymlinks:lnk
+  tar zxf "${_realname}-${pkgver}.tar.gz"
+
+  [[ -d "makedeps" ]] && rm -rf "makedeps"
+  mkdir -p "${srcdir}"/makedeps && cd "${srcdir}"/makedeps
+  "${MINGW_PREFIX}"/bin/npm install pnpm
+  "${MINGW_PREFIX}"/bin/sed -i 's/msvs/ninja/g' node_modules/pnpm/dist/node_modules/node-gyp/gyp/pylib/gyp/__init__.py
+  "${MINGW_PREFIX}"/bin/sed -i 's/"win32": "win"/"win32": "linux"/g' node_modules/pnpm/dist/node_modules/node-gyp/gyp/pylib/gyp/common.py
+}
+
+build()
+{
+  cd "${srcdir}/${_realname}-${pkgver}"
+  "${MINGW_PREFIX}"/bin/node "${srcdir}"/makedeps/node_modules/pnpm/bin/pnpm.cjs install --frozen-lockfile
+  "${MINGW_PREFIX}"/bin/node "${srcdir}"/makedeps/node_modules/pnpm/bin/pnpm.cjs run compile
+}
+
+package() {
+  cd "${srcdir}/${_realname}-${pkgver}"
+  
+
+  install -dm755  "${pkgdir}"/${MINGW_PREFIX}/lib/node_modules/pnpm
+  #cp -R * "${pkgdir}"/${MINGW_PREFIX}/lib/node_modules/pnpm
+
+  ls bin
+  ls dist
+  #install -dm755 "${pkgdir}"/${MINGW_PREFIX}/bin
+  #cp bin/pnpm "${pkgdir}"/${MINGW_PREFIX}/bin/
+  #cp bin/pnpm.cmd "${pkgdir}"/${MINGW_PREFIX}/bin/
+  #cp bin/pnpx "${pkgdir}"/${MINGW_PREFIX}/bin/
+  #cp bin/pnpx.cmd "${pkgdir}"/${MINGW_PREFIX}/bin/
+
+  install -Dm644 LICENSE "${pkgdir}/${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"
+  install -Dm644 README.md "${pkgdir}/${MINGW_PREFIX}/share/doc/${_realname}/README.md"
+}
