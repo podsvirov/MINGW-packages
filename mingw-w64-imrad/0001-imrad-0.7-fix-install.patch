@@ -1,0 +1,93 @@
+diff -Naur imrad-release-0.7-orig/CMakeLists.txt imrad-release-0.7/CMakeLists.txt
+--- imrad-release-0.7-orig/CMakeLists.txt	2024-01-06 00:55:56.813569500 +0300
++++ imrad-release-0.7/CMakeLists.txt	2024-01-06 01:13:45.103975200 +0300
+@@ -8,7 +8,6 @@
+ # make use of runtime directory
+ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+ 
+-set(CMAKE_INSTALL_PREFIX "${CMAKE_INSTALL_PREFIX}/latest")
+ 
+ if(MSVC)
+     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
+@@ -36,14 +35,16 @@
+     add_definitions(-DGL_SILENCE_DEPRECATION=1)
+ endif()
+ 
++include(GNUInstallDirs)
++
+ # before includes
+ install(
+     DIRECTORY "template/" 
+-    DESTINATION "template"
++    DESTINATION "${CMAKE_INSTALL_BINDIR}/template"
+ )
+ install(
+     DIRECTORY "style/" 
+-    DESTINATION "style"
++    DESTINATION "${CMAKE_INSTALL_BINDIR}/style"
+ )
+ 
+ include(ExternalProject)
+diff -Naur imrad-release-0.7-orig/cmake/fa.cmake imrad-release-0.7/cmake/fa.cmake
+--- imrad-release-0.7-orig/cmake/fa.cmake	2024-01-06 00:55:56.782320600 +0300
++++ imrad-release-0.7/cmake/fa.cmake	2024-01-06 01:14:59.843623400 +0300
+@@ -12,4 +12,4 @@
+ 	"${FA_INCLUDE_DIR}/MaterialIcons-Regular.ttf"
+ 	"${FA_INCLUDE_DIR}/Roboto-Medium.ttf"
+ 	"${FA_INCLUDE_DIR}/Roboto-Regular.ttf"
+-	DESTINATION "style/")
+\ No newline at end of file
++	DESTINATION "${CMAKE_INSTALL_BINDIR}/style/")
+diff -Naur imrad-release-0.7-orig/src/CMakeLists.txt imrad-release-0.7/src/CMakeLists.txt
+--- imrad-release-0.7-orig/src/CMakeLists.txt	2024-01-06 00:55:56.797941500 +0300
++++ imrad-release-0.7/src/CMakeLists.txt	2024-01-06 01:12:15.307471100 +0300
+@@ -25,7 +25,7 @@
+ 
+ add_dependencies(imrad nativefiledialog)
+ 
+-install(FILES "imrad.h" DESTINATION "include/")
+-install(TARGETS imrad DESTINATION ".")
+-install(FILES "icon-40.png" DESTINATION ".")
+-install(FILES "icon-100.png" DESTINATION ".")
++install(FILES "imrad.h" DESTINATION "${CMAKE_INSTALL_INCLUDEDIR}")
++install(TARGETS imrad DESTINATION "${CMAKE_INSTALL_BINDIR}")
++install(FILES "icon-40.png" DESTINATION "${CMAKE_INSTALL_BINDIR}")
++install(FILES "icon-100.png" DESTINATION "${CMAKE_INSTALL_BINDIR}")
+diff -Naur imrad-release-0.7-orig/src/imrad.cpp imrad-release-0.7/src/imrad.cpp
+--- imrad-release-0.7-orig/src/imrad.cpp	2024-01-06 00:55:56.797941500 +0300
++++ imrad-release-0.7/src/imrad.cpp	2024-01-06 01:04:23.170859900 +0300
+@@ -1692,16 +1692,7 @@
+ 	ImGui::GetCurrentContext()->SettingsHandlers.push_back(ini_handler);
+ }
+ 
+-#ifdef WIN32
+-int WINAPI wWinMain(
+-	HINSTANCE   hInstance,
+-	HINSTANCE   hPrevInstance,
+-	PWSTR       lpCmdLine,
+-	int         nCmdShow
+-)
+-#else
+ int main(int argc, const char* argv[])
+-#endif
+ {
+ 	// Setup window
+ 	glfwSetErrorCallback(glfw_error_callback);
+diff -Naur imrad-release-0.7-orig/src/imrad.h imrad-release-0.7/src/imrad.h
+--- imrad-release-0.7-orig/src/imrad.h	2024-01-06 00:55:56.797941500 +0300
++++ imrad-release-0.7/src/imrad.h	2024-01-06 00:57:49.226898900 +0300
+@@ -4,6 +4,7 @@
+ #include <functional>
+ #include <fstream> //Save/LoadStyle
+ #include <iomanip> //std::quoted
++#include <memory> //std::unique_ptr
+ #include <sstream> 
+ #include <map>
+ #include <imgui.h>
+@@ -601,4 +602,4 @@
+ 	return nullptr;
+ }
+ 
+-}
+\ No newline at end of file
++}

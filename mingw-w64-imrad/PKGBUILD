@@ -1,0 +1,68 @@
+# Maintainer: Konstantin Podsvirov <konstantin@podsvirov.pro>
+
+_realname=imrad
+pkgbase=mingw-w64-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=0.7
+_glfwver=3fa2360720eeba1964df3c0ecf4b5df8648a8e52
+_imguiver=0941adc931cd3c69bf7914bf7122148a985e45c5
+_nfdver=75cbdf819785d9f94855987724e30a6ba0a87e29
+_stbver=5736b15f7ea0ffb08dd38af21067c314d6a3aae9
+pkgrel=1
+pkgdesc='A GUI builder for the ImGui library (mingw-w64)'
+arch=('any')
+mingw_arch=('mingw64' 'ucrt64')
+url='https://github.com/tpecholt/imrad'
+license=('GPL')
+depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
+         "${MINGW_PACKAGE_PREFIX}-libwinpthread-git")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
+             "${MINGW_PACKAGE_PREFIX}-ninja"
+             "${MINGW_PACKAGE_PREFIX}-cc")
+source=("${url}/archive/release-${pkgver}/${_realname}-release-${pkgver}.tar.gz"
+        "https://github.com/glfw/glfw/archive/${_glfwver}/glfw-${_glfwver}.tar.gz"
+        "https://github.com/ocornut/imgui/archive/${_imguiver}/imgui-${_imguiver}.tar.gz"
+        "https://github.com/btzy/nativefiledialog-extended/archive/${_nfdver}/nativefiledialog-extended-${_nfdver}.tar.gz"
+        "https://github.com/nothings/stb/archive/${_stbver}/stb-${_stbver}.tar.gz"
+        '0001-imrad-0.7-fix-install.patch')
+sha256sums=('af2cf689f243ad11fd0709ba3780eec023cac0e7e1e6884c26f562a0d30aaa87'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP'
+            'SKIP')
+
+prepare() {
+  cd "${srcdir}"
+  rm -rf "${_realname}-release-${pkgver}/3rdparty/glfw" | true
+  cp -r "glfw-${_glfwver}" "${_realname}-release-${pkgver}/3rdparty/glfw"
+  rm -rf "${_realname}-release-${pkgver}/3rdparty/imgui" | true
+  cp -r "imgui-${_imguiver}" "${_realname}-release-${pkgver}/3rdparty/imgui"
+  rm -rf "${_realname}-release-${pkgver}/3rdparty/nativefiledialog" | true
+  cp -r "nativefiledialog-extended-${_nfdver}" "${_realname}-release-${pkgver}/3rdparty/nativefiledialog"
+  rm -rf "${_realname}-release-${pkgver}/3rdparty/stb" | true
+  cp -r "stb-${_stbver}" "${_realname}-release-${pkgver}/3rdparty/stb"
+
+  cd "${srcdir}/${_realname}-release-${pkgver}"
+  patch -p1 -i ${srcdir}/0001-imrad-0.7-fix-install.patch
+}
+
+build() {
+  [[ -d "${srcdir}/build-${MSYSTEM}" ]] && rm -rf "${srcdir}/build-${MSYSTEM}"
+  mkdir -p "${srcdir}/build-${MSYSTEM}" && cd "${srcdir}/build-${MSYSTEM}"
+
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+  ${MINGW_PREFIX}/bin/cmake \
+    -G"Ninja" \
+    -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+    -DCMAKE_BUILD_TYPE=Release \
+    ../${_realname}-release-${pkgver}
+  cmake --build .
+}
+
+package() {
+  cd "${srcdir}/build-${MSYSTEM}"
+  DESTDIR=${pkgdir} cmake --install .
+
+  install -Dm644 "${srcdir}/${_realname}-release-${pkgver}/LICENSE" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"
+}
