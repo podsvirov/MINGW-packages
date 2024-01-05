@@ -1,0 +1,68 @@
+# Maintainer: Konstantin Podsvirov <konstantin@podsvirov.su>
+
+_realname=imrad
+pkgbase=mingw-w64-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=0.8
+_glfwver=3fa2360720eeba1964df3c0ecf4b5df8648a8e52
+_imguiver=527b2c45af2f8964f95826bd16ab7c7ed372ae41
+_nfdver=75cbdf819785d9f94855987724e30a6ba0a87e29
+_stbver=5736b15f7ea0ffb08dd38af21067c314d6a3aae9
+_ftver=37cefe33b284d0bad4ec52bcccc1a8c2d8704340
+pkgrel=1
+pkgdesc='A GUI builder for the ImGui library (mingw-w64)'
+arch=('any')
+mingw_arch=('mingw64' 'ucrt64')
+url='https://github.com/tpecholt/imrad'
+license=('GPL')
+depends=("${MINGW_PACKAGE_PREFIX}-gcc-libs"
+         "${MINGW_PACKAGE_PREFIX}-libwinpthread-git")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
+             "${MINGW_PACKAGE_PREFIX}-ninja"
+             "${MINGW_PACKAGE_PREFIX}-cc")
+source=("${url}/archive/release-${pkgver}/${_realname}-release-${pkgver}.tar.gz"
+        "https://github.com/glfw/glfw/archive/${_glfwver}/glfw-${_glfwver}.tar.gz"
+        "https://github.com/ocornut/imgui/archive/${_imguiver}/imgui-${_imguiver}.tar.gz"
+        "https://github.com/btzy/nativefiledialog-extended/archive/${_nfdver}/nativefiledialog-extended-${_nfdver}.tar.gz"
+        "https://github.com/nothings/stb/archive/${_stbver}/stb-${_stbver}.tar.gz"
+        "https://github.com/freetype/freetype/archive/${_ftver}/freetype-${_ftver}.tar.gz")
+sha256sums=('f112c3591eb1c03aaa67826a578fdd7dc88ba0518b6a17504ed50b84475d3bb8'
+            '5a11b0fd9819d26fb1e783be8d88e6e870cbb36d01465652037db8f7c9de2904'
+            '968324e3a747b5653b213263a18a87612893dcc96df38c41f9d5bbfee348a326'
+            '374a8e14efd927e1faa72642bf1bc3875709392bf10adfc37ed34e2a4a1c6b56'
+            'd00921d49b06af62aa6bfb97c1b136bec661dd11dd4eecbcb0da1f6da7cedb4c'
+            '88c316761f33bb9637142921f47003266bcdbd2cf81e010459d3a36c83da11ac')
+
+prepare() {
+  cd "${srcdir}"
+  rm -rf "${_realname}-release-${pkgver}/3rdparty/glfw" | true
+  cp -r "glfw-${_glfwver}" "${_realname}-release-${pkgver}/3rdparty/glfw"
+  rm -rf "${_realname}-release-${pkgver}/3rdparty/imgui" | true
+  cp -r "imgui-${_imguiver}" "${_realname}-release-${pkgver}/3rdparty/imgui"
+  rm -rf "${_realname}-release-${pkgver}/3rdparty/nativefiledialog" | true
+  cp -r "nativefiledialog-extended-${_nfdver}" "${_realname}-release-${pkgver}/3rdparty/nativefiledialog"
+  rm -rf "${_realname}-release-${pkgver}/3rdparty/stb" | true
+  cp -r "stb-${_stbver}" "${_realname}-release-${pkgver}/3rdparty/stb"
+  rm -rf "${_realname}-release-${pkgver}/3rdparty/freetype" | true
+  cp -r "freetype-${_ftver}" "${_realname}-release-${pkgver}/3rdparty/freetype"
+}
+
+build() {
+  [[ -d "${srcdir}/build-${MSYSTEM}" ]] && rm -rf "${srcdir}/build-${MSYSTEM}"
+  mkdir -p "${srcdir}/build-${MSYSTEM}" && cd "${srcdir}/build-${MSYSTEM}"
+
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+  ${MINGW_PREFIX}/bin/cmake \
+    -G"Ninja" \
+    -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+    -DCMAKE_BUILD_TYPE=Release \
+    ../${_realname}-release-${pkgver}
+  cmake --build .
+}
+
+package() {
+  cd "${srcdir}/build-${MSYSTEM}"
+  DESTDIR=${pkgdir} cmake --install .
+
+  install -Dm644 "${srcdir}/${_realname}-release-${pkgver}/LICENSE" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"
+}
