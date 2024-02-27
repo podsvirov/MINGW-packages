@@ -3,50 +3,79 @@
 _realname=discount
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=2.2.7
-pkgrel=2
+_pkgver=3.0.0d
+pkgver=3.0.0.d
+pkgrel=1
 pkgdesc="A Markdown implementation written in C (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw32' 'mingw64' 'ucrt64' 'clang64' 'clang32' 'clangarm64')
 url="https://www.pell.portland.or.us/~orc/Code/discount/"
+msys2_repository_url="https://github.com/Orc/discount"
 license=('custom:BSD')
-makedepends=("${MINGW_PACKAGE_PREFIX}-autotools" "${MINGW_PACKAGE_PREFIX}-cc")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-cmake"
+             "${MINGW_PACKAGE_PREFIX}-ninja")
 provides=("${MINGW_PACKAGE_PREFIX}-markdown")
 conflicts=("${MINGW_PACKAGE_PREFIX}-markdown")
 options=('strip' 'staticlibs')
-source=("${_realname}-${pkgver}.tar.gz"::"https://github.com/Orc/discount/archive/v${pkgver}.tar.gz"
+source=("${msys2_repository_url}/archive/v${_pkgver}/${_realname}-${_pkgver}.tar.gz"
         "discount-mingw-building.patch")
-sha256sums=('72c1325ddfc40871d6810f1e272cf2d45b361f26357eb38f170fd04d737bb9f2'
+sha256sums=('0ed8cc27ac5d46dc6a8beedd5e5673ac8b466a6474bdb7d35f37c815f670385f'
             '1dafea93f8d546f00b3f57928124392e28fd30e4ef60268736d4837075e3e462')
 
 prepare() {
-  cd "${srcdir}"/${_realname}-${pkgver}
-  patch -p1 -i ${srcdir}/discount-mingw-building.patch
-  sed -e "s/m 444/m 644/g" -i configure.inc
+  cd "${srcdir}/${_realname}-${_pkgver}"
+  #patch -p1 -i ${srcdir}/discount-mingw-building.patch
+  #sed -e "s/m 444/m 644/g" -i configure.inc
 }
 
 build() {
-  [[ -d "${srcdir}"/build-${MSYSTEM} ]] && rm -rf "${srcdir}"/build-${MSYSTEM}
-  cp -rf "${srcdir}"/${_realname}-${pkgver} "${srcdir}"/build-${MSYSTEM} && cd "${srcdir}"/build-${MSYSTEM}
+  declare -a _extra_config
+  if check_option "debug" "n"; then
+    _extra_config+=("-DCMAKE_BUILD_TYPE=Release")
+  else
+    _extra_config+=("-DCMAKE_BUILD_TYPE=Debug")
+  fi
 
-  # for clang
-  CFLAGS+=" -Wno-incompatible-function-pointer-types"
+  # Build shared libs
+  mkdir -p "${srcdir}/shared-${MSYSTEM}" && cd "${srcdir}/shared-${MSYSTEM}"
 
-  AC_CPP_PROG=${MINGW_PREFIX}/bin/cpp.exe \
-  AC_LN_PROG="cp -pR" \
-  ./configure.sh \
-      --prefix=${MINGW_PREFIX} \
-      --enable-all-features \
-      --shared
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+  ${MINGW_PREFIX}/bin/cmake.exe \
+    -G "Ninja" \
+    -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+    "${_extra_config[@]}" \
+    -DBUILD_SHARED_LIBS=ON \
+    -DDISCOUNT_ONLY_LIBRARY=ON \
+    -DDISCOUNT_CXX_BINDING=ON \
+    ../${_realname}-${_pkgver}/cmake
 
-  make
+  ${MINGW_PREFIX}/bin/cmake.exe --build ./
+
+  # Build static libs
+  mkdir -p "${srcdir}/static-${MSYSTEM}" && cd "${srcdir}/static-${MSYSTEM}"
+
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+  ${MINGW_PREFIX}/bin/cmake.exe \
+    -G "Ninja" \
+    -DCMAKE_INSTALL_PREFIX=${MINGW_PREFIX} \
+    "${_extra_config[@]}" \
+    -DBUILD_SHARED_LIBS=OFF \
+    -DDISCOUNT_ONLY_LIBRARY=ON \
+    -DDISCOUNT_CXX_BINDING=ON \
+    ../${_realname}-${_pkgver}/cmake
+
+  ${MINGW_PREFIX}/bin/cmake.exe --build ./
 }
 
 package() {
-  cd "${srcdir}/build-${MSYSTEM}"
-  mkdir -p ${pkgdir}${MINGW_PREFIX}/{bin,include,lib}
-  make PREFIX=${MINGW_PREFIX} DESTDIR="${pkgdir}" install.everything
-  mv ${pkgdir}${MINGW_PREFIX}/lib/*.dll ${pkgdir}${MINGW_PREFIX}/bin/
+  cd "${srcdir}/static-${MSYSTEM}"
+  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake.exe --install ./
+
+  cd "${srcdir}/shared-${MSYSTEM}"
+  DESTDIR="${pkgdir}" ${MINGW_PREFIX}/bin/cmake.exe --install ./
+
+  cd "${srcdir}/${_realname}-${_pkgver}"
   install -Dm644 COPYRIGHT "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"
   
   local PREFIX_DEPS=$(cygpath -am ${MINGW_PREFIX})
