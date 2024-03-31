@@ -3,7 +3,7 @@
 _realname=helix
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=23.10
+pkgver=24.03
 pkgrel=1
 pkgdesc="A post-modern modal text editor (mingw-w64)"
 arch=('any')
@@ -16,7 +16,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-rust"
 source=("$url/archive/$pkgver/${_realname}-${pkgver}.tar.gz"
         'helix.sh')
 noextract=("${_realname}-${pkgver}.tar.gz")
-sha256sums=('a1a98b24692ba8fc648245bebc3511b27eb4edf9eb97d97d8aed7157316d01e8'
+sha256sums=('2b6c1e4909e77c97d7acfbdc653c0790f7aa2d5f68684e2105e1b0563506da4f'
             'c557a1e313586decf3d00fcf67e9a3f6139a2850b2e267b14d33e45636e84790')
 
 prepare() {
@@ -57,6 +57,7 @@ build() {
   CXXFLAGS+=" -Wno-implicit-int"
   "${MINGW_PREFIX}/bin/cargo.exe" build \
     --locked \
+    --target "$(rustc -vV | sed -n 's/host: //p')" \
     --release
 
   msg "Build documentation"
@@ -70,6 +71,7 @@ check() {
 
   "${MINGW_PREFIX}/bin/cargo.exe" test \
     --locked \
+    --target "$(rustc -vV | sed -n 's/host: //p')" \
     --release
 }
 
