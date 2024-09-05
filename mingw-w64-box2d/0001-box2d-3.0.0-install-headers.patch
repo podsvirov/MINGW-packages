@@ -1,0 +1,16 @@
+--- box2d-3.0.0.orig/CMakeLists.txt	2024-09-10 19:07:11.177085000 +0300
++++ box2d-3.0.0/CMakeLists.txt	2024-09-10 19:08:17.030466000 +0300
+@@ -65,6 +65,13 @@
+ 	option(BOX2D_VALIDATE "Enable heavy validation" ON)
+ 	option(BOX2D_UNIT_TESTS "Build the Box2D unit tests" ON)
+ 
++	include(GNUInstallDirs)
++
++	install(
++		DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/include/box2d"
++		DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
++	)
++
+ 	if(MSVC AND WIN32)
+ 		# Enable edit and continue only in debug due to perf hit in release
+ 		# add_link_options($<$<CONFIG:Debug>:/INCREMENTAL>)
