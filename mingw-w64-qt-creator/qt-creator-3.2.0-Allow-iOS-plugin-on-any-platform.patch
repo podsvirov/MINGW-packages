@@ -1,10 +1,11 @@
---- a/src/plugins/ios/Ios.json.in
-+++ b/src/plugins/ios/Ios.json.in
-@@ -2,7 +2,6 @@
+diff -Naur qt-creator-opensource-src-15.0.0.orig/src/plugins/ios/Ios.json.in qt-creator-opensource-src-15.0.0/src/plugins/ios/Ios.json.in
+--- qt-creator-opensource-src-15.0.0.orig/src/plugins/ios/Ios.json.in	2024-12-04 21:14:08.056621700 +0300
++++ qt-creator-opensource-src-15.0.0/src/plugins/ios/Ios.json.in	2024-12-04 21:17:19.640822400 +0300
+@@ -3,7 +3,6 @@
      "Name" : "Ios",
      "Version" : "${IDE_VERSION}",
      "CompatVersion" : "${IDE_VERSION_COMPAT}",
 -    "Platform" : "OS X.*",
+     "VendorId" : "theqtcompany",
      "Vendor" : "The Qt Company Ltd",
-     "Copyright" : "(C) ${IDE_COPYRIGHT_YEAR} The Qt Company Ltd",
-     "License" : [ "Commercial Usage",
+     "Copyright" : "${IDE_COPYRIGHT}",
