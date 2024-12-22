@@ -3,7 +3,7 @@
 _realname=tgui
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=1.6.1
+pkgver=1.7.0
 pkgrel=1
 pkgdesc="Cross-platform C++ GUI library (mingw-w64)"
 arch=('any')
@@ -19,7 +19,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-ninja"
              "${MINGW_PACKAGE_PREFIX}-doxygen")
 
 source=("${msys2_repository_url}/archive/v${pkgver}/${_realname^^}-${pkgver}.tar.gz")
-sha256sums=('c9ee4dd9107a107bc818368691c607ab812fd8cf18d02effbe8a1413edea657f')
+sha256sums=('7d40359770e2f8e534a57332c99fd56c72cf79a8b59642676e01394fe05cb1fa')
 
 build() {
   declare -a extra_config
