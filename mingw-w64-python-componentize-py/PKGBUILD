@@ -1,0 +1,58 @@
+# Maintainer: Konstantin Podsvirov <konstantin@podsvirov.pro>
+
+_realname=componentize-py
+pkgbase=mingw-w64-python-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
+pkgver=0.16.0
+_pkgver=528a3a07fd5197396dc1a330a412e48f71093f5c
+pkgrel=1
+pkgdesc='A tool to convert a Python application to a WebAssembly component (mingw-w64)'
+arch=('any')
+mingw_arch=('mingw64' 'ucrt64' 'clang64')
+msys2_references=(
+  'pypi: watchfiles'
+)
+url='https://github.com/bytecodealliance/componentize-py'
+license=('spdx:MIT')
+depends=(
+  "${MINGW_PACKAGE_PREFIX}-python"
+)
+makedepends=(
+  "${MINGW_PACKAGE_PREFIX}-rust"
+  "${MINGW_PACKAGE_PREFIX}-python-maturin"
+  "${MINGW_PACKAGE_PREFIX}-python-installer"
+)
+options=('!strip')
+#source=("https://pypi.org/packages/source/${_realname::1}/${_realname/-/_}/${_realname/-/_}-${pkgver}.tar.gz")
+source=("${url}/archive/${_pkgver}/${_realname}-${_pkgver}.tar.gz")
+sha256sums=('d46be08e8ff8571654decae8c509832ec3dc40c22a7d9fb99446f20b50c6060a')
+
+prepare() {
+  cd "${srcdir}/${_realname}-${_pkgver}"
+
+  "${MINGW_PREFIX}"/bin/cargo fetch --locked
+}
+
+build() {
+  cd "${srcdir}/${_realname}-${_pkgver}"
+
+  export WINAPI_NO_BUNDLED_LIBRARIES=1
+  "${MINGW_PREFIX}"/bin/maturin build --release --strip --locked --all-features
+}
+
+check() {
+  cd "${srcdir}/${_realname}-${_pkgver}"
+
+  "${MINGW_PREFIX}"/bin/cargo test --release --frozen --all-features
+}
+
+package() {
+  cd "${srcdir}/${_realname}-${pkgver}"
+
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    "${MINGW_PREFIX}"/bin/python -m installer --prefix=${MINGW_PREFIX} \
+    --destdir="${pkgdir}" target/wheels/*.whl
+
+  install -vDm 644 LICENSE -t "${pkgdir}${MINGW_PREFIX}/share/licenses/python-${_realname}/"
+  install -vDm 644 README.md -t "${pkgdir}${MINGW_PREFIX}/share/doc/python-${_realname}/"
+}
