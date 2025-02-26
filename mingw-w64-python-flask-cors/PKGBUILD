@@ -4,7 +4,7 @@ _pyname=flask_cors
 _realname=flask-cors
 pkgbase=mingw-w64-python-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
-pkgver=5.0.0
+pkgver=5.0.1
 pkgrel=1
 pkgdesc='A Flask extension adding a decorator for CORS support (mingw-w64)'
 arch=('any')
@@ -23,7 +23,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-python-build"
              "${MINGW_PACKAGE_PREFIX}-python-installer"
              "${MINGW_PACKAGE_PREFIX}-python-setuptools")
 source=("https://pypi.org/packages/source/${_pyname::1}/${_pyname}/${_pyname}-${pkgver}.tar.gz")
-sha256sums=('5aadb4b950c4e93745034594d9f3ea6591f734bb3662e16e255ffbf5e89c88ef')
+sha256sums=('6ccb38d16d6b72bbc156c1c3f192bc435bfcc3c2bc864b2df1eb9b2d97b2403c')
 
 build() {
   cp -r "${_pyname}-${pkgver}" "python-build-${MSYSTEM}" && cd "python-build-${MSYSTEM}"
