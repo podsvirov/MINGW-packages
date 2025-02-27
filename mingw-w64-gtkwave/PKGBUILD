@@ -10,7 +10,7 @@
 _realname=gtkwave
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=3.3.118
+pkgver=3.3.121
 pkgrel=1
 pkgdesc='A wave viewer which reads LXT, LXT2, VZT, GHW and VCD/EVCD files (mingw-w64)'
 arch=('any')
@@ -36,7 +36,7 @@ makedepends=(
   'intltool'
 )
 source=("https://downloads.sourceforge.net/project/${_realname}/${_realname}-gtk3-${pkgver}/${_realname}-gtk3-${pkgver}.tar.gz")
-sha256sums=('0f4330c028a2ab3d2f4d4ceeaf6db6925db010c4b6fd52d11022d0e5dea0486a')
+sha256sums=('54aa45788d6d52afb659c3aef335aafde0ef2c8990a7770f8eaa64e57f227346')
 
 prepare() {
   cd "${srcdir}/${_realname}-gtk3-${pkgver}"
