@@ -1,0 +1,62 @@
+# Maintainer: Konstantin Podsvirov <konstantin@podsvirov.su>
+
+_shortname=vengi
+_realname=${_shortname}-voxel
+pkgbase=mingw-w64-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=0.0.35
+pkgrel=1
+pkgdesc='voxel art tools - editor, thumbnailer and format converter (mingw-w64)'
+arch=('any')
+mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
+url='https://vengi-voxel.github.io/vengi/'
+msys2_repository_url='https://github.com/vengi-voxel/vengi'
+license=('spdx:MIT')
+depends=("${MINGW_PACKAGE_PREFIX}-sdl3"
+         "${MINGW_PACKAGE_PREFIX}-luajit")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
+             "${MINGW_PACKAGE_PREFIX}-ninja"
+             "${MINGW_PACKAGE_PREFIX}-cc")
+source=("${msys2_repository_url}/archive/v${pkgver}/${_shortname}-${pkgver}.tar.gz")
+sha256sums=('ebf01997496b4de9cd08cac53d6a1b5b87144107bce8d2a642145b7591c43a9a')
+
+prepare() {
+  cd "${_shortname}-${pkgver}"
+
+  #patch -Np1 -i "${srcdir}"/0001-A-really-important-fix.patch
+  #patch -Np1 -i "${srcdir}"/0002-A-less-important-fix.patch
+}
+
+build() {
+  declare -a extra_config
+  if check_option "debug" "n"; then
+    extra_config+=("-DCMAKE_BUILD_TYPE=Release")
+  else
+    extra_config+=("-DCMAKE_BUILD_TYPE=Debug")
+  fi
+
+      #-DBUILD_{SHARED,STATIC}_LIBS=ON \
+
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+    cmake \
+      -GNinja \
+      -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}" \
+      "${extra_config[@]}" \
+      -DUSE_SDL_VERSION=3 \
+      -DUNITTESTS=OFF \
+      -DVISUALTESTS=OFF \
+      -S "${_shortname}-${pkgver}" \
+      -B "build-${MSYSTEM}"
+
+  cmake --build "build-${MSYSTEM}"
+}
+
+check() {
+  cmake --build "build-${MSYSTEM}" --target test
+}
+
+package() {
+  DESTDIR="${pkgdir}" cmake --install "build-${MSYSTEM}"
+
+  install -Dm644 "${srcdir}/${_shortname}-${pkgver}/LICENSE" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE"
+}
