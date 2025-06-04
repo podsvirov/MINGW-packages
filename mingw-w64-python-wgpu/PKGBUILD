@@ -1,0 +1,42 @@
+# Maintainer: Konstantin Podsvirov <konstantin@podsvirov.su>
+
+_realname=wgpu
+pkgbase=mingw-w64-python-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
+pkgver=0.22.2
+pkgrel=1
+pkgdesc='WebGPU for Python (mingw-w64)'
+url='https://wgpu-py.readthedocs.io/'
+msys2_repository_url='https://github.com/pygfx/wgpu-py'
+arch=('any')
+mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
+msys2_references=(
+  'purl: pkg:pypi/wgpu'
+)
+license=('spdx:BSD-3-Clause')
+depends=("${MINGW_PACKAGE_PREFIX}-python-cffi"
+         "${MINGW_PACKAGE_PREFIX}-python-sniffio")
+makedepends=("${MINGW_PACKAGE_PREFIX}-python-build"
+             "${MINGW_PACKAGE_PREFIX}-python-installer"
+             "${MINGW_PACKAGE_PREFIX}-python-hatchling")
+source=("https://pypi.org/packages/source/${_realname::1}/${_realname}/${_realname}-${pkgver}.tar.gz")
+sha256sums=('118ef8790b34b36b9b47c6a25f74ca334dd9c94508549d40bc81de712ea10ab2')
+
+prepare() {
+  rm -rf python-build-${MSYSTEM} | true
+  cp -r "${_realname}-${pkgver}" "python-build-${MSYSTEM}"
+}
+
+build() {
+  cd "${srcdir}/python-build-${MSYSTEM}"
+
+  ${MINGW_PREFIX}/bin/python -m build --wheel --skip-dependency-check --no-isolation
+}
+
+package() {
+  cd "${srcdir}/python-build-${MSYSTEM}"
+  MSYS2_ARG_CONV_EXCL="--prefix=;--install-scripts=;--install-platlib=" \
+    ${MINGW_PREFIX}/bin/python -m installer --prefix=${MINGW_PREFIX} \
+    --destdir="${pkgdir}" dist/*.whl
+  install -Dm644 LICENSE "${pkgdir}${MINGW_PREFIX}/share/licenses/python-${_realname}/LICENSE"
+}
