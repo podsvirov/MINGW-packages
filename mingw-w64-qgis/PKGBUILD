@@ -3,8 +3,8 @@
 _realname=qgis
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=3.42.0
-pkgrel=2
+pkgver=3.44.0
+pkgrel=1
 pkgdesc='Geographic Information System (GIS) that supports vector, raster & database formats (mingw-w64)'
 arch=('any')
 mingw_arch=('ucrt64' 'clang64' 'clangarm64')
@@ -63,7 +63,7 @@ source=("https://qgis.org/downloads/${_realname}-$pkgver.tar.bz2"
         "001-fix-building-with-mingw-w64-clang.patch"
         "002-fix-settingstree-init-order-clang.patch"
         "004-fix-customwidgets-install.patch")
-sha256sums=('04b743397ee2375a1a0521578131fc514752f84db2f86225a9551d1f87e704e8'
+sha256sums=('81e5088060f38ab4e9835b05e5eec1ba7cc2eb903105830808b60215ae2cd320'
             '82d8839992f08a26ea7caf5e908e5f4111806df211ae5cec91e2b86e49b43e75'
             '47e6471b92b85d97e58b617da326c15622c01786c19eb7d4d5814483becb75e4'
             '216dc67ef707f2e918afb7d190c9ea75c11065dea0d23d11b94cab5d8463bac3')
