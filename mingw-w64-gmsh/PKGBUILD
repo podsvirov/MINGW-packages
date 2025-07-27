@@ -3,8 +3,8 @@
 _realname=gmsh
 pkgbase=mingw-w64-${_realname}
 pkgname="${MINGW_PACKAGE_PREFIX}-${_realname}"
-pkgver=4.13.1
-pkgrel=4
+pkgver=4.14.0
+pkgrel=1
 pkgdesc="3D finite element mesh generator with built-in CAD engine and post-processor (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -32,7 +32,7 @@ source=(https://gmsh.info/src/gmsh-${pkgver}-source.tgz
         0003-fltk-1.4.patch::https://gitlab.onelab.info/gmsh/gmsh/-/commit/3b3f0f7e16430939b345889a9e31b50104d5baf3.patch
         0004-cmake-4.0.patch::https://gitlab.onelab.info/gmsh/gmsh/-/commit/499461f6d57b156bc76a8fdc607097426a8545a5.patch
         0005-aarch64-image-base.patch)
-sha256sums=('77972145f431726026d50596a6a44fb3c1c95c21255218d66955806b86edbe8d'
+sha256sums=('db4d7da2062e9a4356a820832138ab99f97af6388bfeb21599a2eadfb0b76a28'
             'e575ae8fc757694affb6749dc9d52c336691b06159845655ef2ac27aebae8159'
             '4d3f5c4190529e3d45b786adab83f0d65e726357d7367f682ff95b733a88a8c3'
             'f06d4ce2d45b640531d4556fb3fa41741903a4b27a2f28b1d3a1a82be77a42d0'
