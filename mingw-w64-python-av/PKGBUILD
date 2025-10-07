@@ -1,0 +1,53 @@
+# Maintainer: Konstantin Podsvirov <konstantin@podsvirov.su>
+
+_reponame=PyAV
+_realname=av
+pkgbase=mingw-w64-python-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
+pkgver=16.0.0
+pkgrel=1
+pkgdesc="Pythonic bindings for FFmpeg's libraries (mingw-w64)"
+arch=('any')
+mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
+url='https://pyav.basswood-io.com/'
+msys2_repository_url='https://github.com/PyAV-Org/PyAV'
+license=('spdx:BSD-3-Clause')
+depends=("${MINGW_PACKAGE_PREFIX}-ffmpeg"
+         "${MINGW_PACKAGE_PREFIX}-python"
+         "${MINGW_PACKAGE_PREFIX}-python-numpy"
+         "${MINGW_PACKAGE_PREFIX}-python-pillow")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-cython"
+             "${MINGW_PACKAGE_PREFIX}-python-build"
+             "${MINGW_PACKAGE_PREFIX}-python-installer"
+             "${MINGW_PACKAGE_PREFIX}-python-setuptools")
+checkdepends=("${MINGW_PACKAGE_PREFIX}-python-pytest")
+options=('!strip')
+source=("${msys2_repository_url}/archive/v${pkgver}/${_reponame}-${pkgver}.tar.gz")
+sha256sums=('a66911c44faa834975ec99a6dcc99876c60e84c87d5ed82ddb9aa0ef028b33ff')
+
+build() {
+  cp -r "${_reponame}-${pkgver}" "python-build-${MSYSTEM}" && cd "python-build-${MSYSTEM}"
+
+  python -m build --wheel --skip-dependency-check --no-isolation
+}
+
+check() {
+  cd "python-build-${MSYSTEM}"
+
+  local _buildpath=$(python -c 'import sysconfig as c; print(f"lib.{c.get_config_var("PYD_PLATFORM_TAG")}-cython-{c.get_config_var("py_version_nodot")}")')
+  export PYTHONPATH="${srcdir}/${_upstream_name}-${pkgver}/build/${_buildpath}"
+  mv av _av  # so pytest does not attempt to import from source directory
+
+  python -m pytest || true
+}
+
+package() {
+  cd "python-build-${MSYSTEM}"
+
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    python -m installer --prefix=${MINGW_PREFIX} \
+    --destdir="${pkgdir}" dist/*.whl
+
+  install -Dm644 LICENSE.txt "${pkgdir}${MINGW_PREFIX}/share/licenses/python-${_realname}/LICENSE.txt"
+}
