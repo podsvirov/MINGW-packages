@@ -1,0 +1,24 @@
+--- launcher-0.0.1.orig/src-tauri/src/lib.rs	2025-12-04 19:19:21.994818200 +0300
++++ launcher-0.0.1/src-tauri/src/lib.rs	2025-12-04 19:22:39.541180300 +0300
+@@ -104,19 +104,14 @@
+         ])
+         .build(tauri::generate_context!())
+         .expect("error building tauri application")
+-        .run(|app_handle, event| match event {
++        .run(|_app_handle, event| match event {
+             tauri::RunEvent::ExitRequested { .. } => {
+                 state::terminate_rustfs_process();
+             }
+             tauri::RunEvent::Exit => {
+                 state::terminate_rustfs_process();
+             }
+-            tauri::RunEvent::Reopen { .. } => {
+-                if let Some(window) = app_handle.get_webview_window("main") {
+-                    let _ = window.show();
+-                    let _ = window.set_focus();
+-                }
+-            }
++            // Reopen event is handled by tauri-plugin-single-instance
+             _ => {}
+         });
+ }
