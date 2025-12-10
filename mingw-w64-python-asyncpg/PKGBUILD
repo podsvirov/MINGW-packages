@@ -3,8 +3,8 @@
 _realname=asyncpg
 pkgbase=mingw-w64-python-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
-pkgver=0.30.0
-pkgrel=3
+pkgver=0.31.0
+pkgrel=1
 pkgdesc='A fast PostgreSQL Database Client Library for Python/asyncio (mingw-w64)'
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -22,7 +22,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-python-installer"
              "${MINGW_PACKAGE_PREFIX}-python-setuptools")
 source=(https://pypi.org/packages/source/${_realname::1}/${_realname}/${_realname}-${pkgver}.tar.gz)
-sha256sums=('c551e9928ab6707602f44811817f82ba3c446e018bfe1d3abecc8ba5f3eac851')
+sha256sums=('c989386c83940bfbd787180f2b1519415e2d3d6277a70d9d0f0145ac73500735')
 
 build() {
   cp -r "${_realname}-${pkgver}" "python-build-${MSYSTEM}" && cd "python-build-${MSYSTEM}"
