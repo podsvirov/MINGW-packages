@@ -1,0 +1,11 @@
+--- rocky-1.0.0.orig/src/CMakeLists.txt	2026-02-25 00:51:20.000000000 +0300
++++ rocky-1.0.0/src/CMakeLists.txt	2026-05-18 21:45:32.836550400 +0300
+@@ -18,7 +18,7 @@
+ 
+ # treat [[nodisard]] as an error in VS
+ if (WIN32)
+-    add_compile_options(/we4834)
++#    add_compile_options(/we4834)
+ endif()
+ 
+ add_subdirectory(rocky)

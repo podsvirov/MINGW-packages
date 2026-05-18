@@ -1,0 +1,67 @@
+# Maintainer: Konstantin Podsvirov <konstantin@podsvirov.su>
+
+_realname=rocky
+pkgbase=mingw-w64-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=1.1.0
+pkgrel=1
+pkgdesc="3D Terrain Renderer (mingw-w64)"
+arch=('any')
+mingw_arch=('ucrt64' 'clang64' 'clangarm64')
+url='https://github.com/pelicanmapping/rocky/'
+msys2_repository_url='https://github.com/pelicanmapping/rocky'
+license=('spdx:MIT')
+depends=("${MINGW_PACKAGE_PREFIX}-vulkanscenegraph"
+         "${MINGW_PACKAGE_PREFIX}-curl"
+         "${MINGW_PACKAGE_PREFIX}-entt"
+         "${MINGW_PACKAGE_PREFIX}-gdal"
+         "${MINGW_PACKAGE_PREFIX}-openssl")
+makedepends=("${MINGW_PACKAGE_PREFIX}-cmake"
+             "${MINGW_PACKAGE_PREFIX}-ninja"
+             "${MINGW_PACKAGE_PREFIX}-cc")
+source=("${msys2_repository_url}/archive/v${pkgver}/${_realname}-${pkgver}.tar.gz"
+        '0001-rocky-1.0.0-skip-msvc-options.patch')
+sha256sums=('f3992e063b647993d8ffa3ba93fdcd882d59e03e6e65032b0d4334c803e801c7'
+            '171edfa85aa775390f9c3a37055eeee173e31ffbda430c0d049a3bfc85562ffa')
+
+prepare() {
+  cd "${_realname}-${pkgver}"
+
+  patch -p1 -i "${srcdir}"/0001-rocky-1.0.0-skip-msvc-options.patch
+}
+
+build() {
+  declare -a extra_config
+  if check_option "debug" "n"; then
+    extra_config+=("-DCMAKE_BUILD_TYPE=Release")
+  else
+    extra_config+=("-DCMAKE_BUILD_TYPE=Debug")
+  fi
+
+  MSYS2_ARG_CONV_EXCL="-DCMAKE_INSTALL_PREFIX=" \
+    cmake \
+      -GNinja \
+      -DCMAKE_INSTALL_PREFIX="${MINGW_PREFIX}" \
+      "${extra_config[@]}" \
+      -DBUILD_{SHARED,STATIC}_LIBS=ON \
+      -DROCKY_RENDERER_VSG=ON \
+      -DROCKY_SUPPORTS_HTTPLIB=OFF \
+      -DROCKY_SUPPORTS_CURL=ON \
+      -DROCKY_SUPPORTS_HTTPS=ON \
+      -DROCKY_SUPPORTS_GDAL=ON \
+      -DROCKY_SUPPORTS_MBTILES=OFF \
+      -DROCKY_SUPPORTS_AZURE=OFF \
+      -DROCKY_SUPPORTS_BING=OFF \
+      -DROCKY_SUPPORTS_IMGUI=OFF \
+      -DROCKY_SUPPORTS_QT=OFF \
+      -S "${_realname}-${pkgver}" \
+      -B "build-${MSYSTEM}"
+
+  cmake --build "build-${MSYSTEM}"
+}
+
+package() {
+  DESTDIR="${pkgdir}" cmake --install "build-${MSYSTEM}"
+
+  install -Dm644 "${_realname}-${pkgver}/LICENSE.txt" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/LICENSE.txt"
+}
