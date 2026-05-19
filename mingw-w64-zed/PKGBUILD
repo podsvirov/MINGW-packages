@@ -3,10 +3,10 @@
 _realname=zed
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
-         #"${MINGW_PACKAGE_PREFIX}-${_realname}-docs"
+         "${MINGW_PACKAGE_PREFIX}-${_realname}-docs"
 )
 pkgver=1.2.6
-pkgrel=1
+pkgrel=2
 pkgdesc="A high-performance, multiplayer code editor (mingw-w64)"
 arch=('any')
 mingw_arch=('ucrt64' 'clang64' 'clangarm64')
@@ -31,7 +31,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-rust"
              "${MINGW_PACKAGE_PREFIX}-protobuf"
              #"${MINGW_PACKAGE_PREFIX}-sqlite3"
              "${MINGW_PACKAGE_PREFIX}-cargo-about"
-             "${MINGW_PACKAGE_PREFIX}-mdbook"
+             #"${MINGW_PACKAGE_PREFIX}-mdbook"
              "${MINGW_PACKAGE_PREFIX}-rust-bindgen"
              "${MINGW_PACKAGE_PREFIX}-nasm"
              "${MINGW_PACKAGE_PREFIX}-efxc2"
@@ -52,14 +52,14 @@ source=("git+${msys2_repository_url}.git#tag=v${pkgver}"
 sha256sums=('d7af5cd575006926a7c039136f4b25ec1b6961945e67f804a39bd4069c62a10b'
             '91e19ebc2adc8f83e43039e79776e3fda8ca919132d68a1fed6a5faca2683748'
             '48f4900ceb02d3aaf9a1020f33d56629156e96759f456c0e7ca18bfcf910767b'
-            'acaf155e37120a1af8918854a457939cad71e59bca2ced866f89795ed6b0a7b2'
+            'cb619ffb984123401ae21c471c913cbe31e4e1010711009ab52d878a396911c9'
             'efc8fd5c8f5725678b7e4f726aa1414480de7aefac360c7b691ef179ae39c54f')
 
 prepare() {
   cd "${_realname}"
   rm rust-toolchain.toml
 
-  # patch -p1 -i ../zed-fix-docs-build.patch
+  patch -p1 -i ../zed-fix-docs-build.patch
   # link system deps dynamically
   patch -d ../zstd-sys-2.0.16+zstd.1.5.7 -i ../zstd-sys-remove-statik.patch
   # wsl script is hardcoded with zed.exe name
@@ -102,8 +102,10 @@ build() {
   cargo build --release --frozen -p zed -p cli
 
   # mdbook 0.5.0 is not supported currently
-  #cd docs
-  #mdbook build
+  # build mdbook 0.4.40 for docs_preprocessor
+  cargo install --locked mdbook@0.4.40
+  ./script/generate-action-metadata
+  ${USERPROFILE}/.cargo/bin/mdbook build docs
 }
 
 check() {
