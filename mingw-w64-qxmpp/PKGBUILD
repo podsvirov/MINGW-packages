@@ -5,8 +5,8 @@ _realname=qxmpp
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}"
          "${MINGW_PACKAGE_PREFIX}-${_realname}-docs")
-pkgver=1.15.1
-pkgrel=3
+pkgver=1.16.2
+pkgrel=1
 pkgdesc="Cross-platform C++ XMPP client and server library (mingw-w64)"
 arch=('any')
 mingw_arch=('mingw64' 'ucrt64' 'clang64' 'clangarm64')
@@ -22,7 +22,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
              "${MINGW_PACKAGE_PREFIX}-doxygen"
              "${MINGW_PACKAGE_PREFIX}-ninja")
 source=("https://invent.kde.org/libraries/qxmpp/-/archive/v${pkgver}/qxmpp-v${pkgver}.tar.gz")
-sha256sums=('f459664a9f0ac92266f7e0efab54aac51cc68695e5c3169b92d38668eefc4f8c')
+sha256sums=('a7ef1ce8cbedf8d6284ccb42329f9e45c97a7df704b59adc85012c7840a6ca5d')
 
 build() {
   declare -a extra_config
