@@ -1,0 +1,66 @@
+# Maintainer: Konstantin Podsvirov <konstantin@podsvirov.su>
+
+_realname=taisei
+pkgbase=mingw-w64-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=1.4.6
+pkgrel=1
+pkgdesc="Open source Touhou clone (mingw-w64)"
+arch=('any')
+mingw_arch=('ucrt64' 'clang64' 'clangarm64')
+url='https://taisei-project.org/'
+msys2_repository_url='https://github.com/taisei-project/taisei'
+license=('spdx:MIT')
+depends=("${MINGW_PACKAGE_PREFIX}-freetype"
+         "${MINGW_PACKAGE_PREFIX}-hicolor-icon-theme"
+         "${MINGW_PACKAGE_PREFIX}-libpng"
+         "${MINGW_PACKAGE_PREFIX}-libwebp"
+         "${MINGW_PACKAGE_PREFIX}-mimalloc"
+         "${MINGW_PACKAGE_PREFIX}-opusfile"
+         "${MINGW_PACKAGE_PREFIX}-sdl3"
+         "${MINGW_PACKAGE_PREFIX}-zlib"
+         "${MINGW_PACKAGE_PREFIX}-zstd")
+makedepends=("${MINGW_PACKAGE_PREFIX}-meson"
+             "${MINGW_PACKAGE_PREFIX}-ninja"
+             #"${MINGW_PACKAGE_PREFIX}-pkg-config"
+             "${MINGW_PACKAGE_PREFIX}-cc"
+             "${MINGW_PACKAGE_PREFIX}-cglm"
+             "${MINGW_PACKAGE_PREFIX}-python-docutils")
+source=("${msys2_repository_url}/releases/download/v${pkgver}/${_realname}-${pkgver}.tar.xz")
+noextract=("${_realname}-${pkgver}.tar.xz")
+sha256sums=('18d03c67dcc8c7faff22e8defdafc3a734b46c591618d1a678e6e914846889d9')
+
+prepare() {
+  echo "Extracting ${_realname}-${pkgver}.tar.xz ..."
+  tar -xJf "${_realname}-${pkgver}.tar.xz" || true
+}
+
+build() {
+  MSYS2_ARG_CONV_EXCL="--prefix=" \
+    meson setup \
+      --prefix="${MINGW_PREFIX}/share/${_realname}" \
+      --wrap-mode=nodownload \
+      --auto-features=enabled \
+      --buildtype=plain \
+      -Dinstall_macos_bundle=disabled \
+      -Dinstall_relocatable=disabled \
+      -Dr_gles30=disabled \
+      -Dshader_transpiler=disabled \
+      -Dshader_transpiler_dxbc=disabled \
+      -Dgamemode=disabled \
+      -Dinstall_relocatable=enabled \
+      "build-${MSYSTEM}" \
+      "${_realname}-${pkgver}"
+
+  meson compile -C "build-${MSYSTEM}"
+}
+
+check() {
+  meson test -C "build-${MSYSTEM}"
+}
+
+package() {
+  meson install -C "build-${MSYSTEM}" --destdir "${pkgdir}"
+
+  install -Dm644 "${_realname}-${pkgver}/COPYING.txt" "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/COPYING"
+}
