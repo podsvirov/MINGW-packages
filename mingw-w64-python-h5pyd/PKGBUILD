@@ -3,7 +3,7 @@
 _realname=h5pyd
 pkgbase=mingw-w64-python-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-python-${_realname}")
-pkgver=0.24.0
+pkgver=1.0.0
 pkgrel=1
 pkgdesc="h5py distributed - Python client library for HDF Rest API (mingw-w64)"
 arch=('any')
@@ -34,7 +34,7 @@ optdepends=(#"${MINGW_PACKAGE_PREFIX}-python-msrestazure: extra azure support"
             "${MINGW_PACKAGE_PREFIX}-python-h5py: extra hdf5 support")
 options=('!strip')
 source=("https://github.com/HDFGroup/h5pyd/archive/v${pkgver}/${_realname}-${pkgver}.tar.gz")
-sha256sums=('b69ae34d610a1e6dd9b790fd66581db5b6b21c6dfad8e6a2e36f06b26109a3ba')
+sha256sums=('1746112d84c6eba4fc1728404176b3f9bb5ba58640e0f3d80bc43bc90b24e1c1')
 
 build() {
   cp -r "${_realname}-${pkgver}" "python-build-${MSYSTEM}" && cd "python-build-${MSYSTEM}"
