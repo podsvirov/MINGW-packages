@@ -3,7 +3,7 @@
 _realname=koboldcpp
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-pkgver=1.121
+pkgver=1.122
 pkgrel=1
 pkgdesc="An easy-to-use AI text-generation software for GGML and GGUF models (mingw-w64)"
 arch=('any')
@@ -23,7 +23,7 @@ makedepends=("${MINGW_PACKAGE_PREFIX}-cc"
 source=("${url}/archive/v${pkgver}/${_realname}-${pkgver}.tar.gz"
         '0002-use-system-deps.patch'
         '0003-koboldcpp-1.112.1-use-spirv-unified1.patch')
-sha256sums=('16e8b4b3bc2ad97d47dc248c34eee0d1720611212923f28e047683589cec8b85'
+sha256sums=('40d3bec39673f512d2c8c935734091670f8d659079b2b77ad7ebe43a15231971'
             'a8649b37e16efd53b304df5f597f6eb4c61a6965e7b0c2cb70e05883d4ba0879'
             '8f72395e16dd401df0f268eab0f4865241c23f3c5d32d7829d5fd3ec9f06b72d')
 
