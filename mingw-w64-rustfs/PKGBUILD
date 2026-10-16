@@ -3,9 +3,9 @@
 _realname=rustfs
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-_pkgver=1.0.1
+_pkgver=1.0.2
 pkgver=${_pkgver//-/_}
-_consolever=0.1.34
+_consolever=0.1.36
 pkgrel=1
 pkgdesc="High-performance, memory-safe distributed object storage (mingw-w64)"
 arch=('any')
@@ -35,8 +35,8 @@ source=(
 )
 noextract=("rustfs-${_pkgver}.tar.gz"
            "rustfs-console-v${_consolever}.zip")
-sha256sums=('612ae16743723de917d9c8aadfe06aac8516bd9cc2f648d2679128561cb1fe28'
-            '09b43c04a44f65906200d8f020fb753a727d908123cf630a54513fa3e222b751')
+sha256sums=('bac41116de85de988bb7209a521fffb00f9233681c431c80b5160fb7e0d16adb'
+            '0cfd00f539684c826cbd4b542404a9c564ec76ca5d2afc4434f29d86742d2200')
 
 prepare() {
   echo "Extracting ${_realname}-${_pkgver}.tar.gz ..."
