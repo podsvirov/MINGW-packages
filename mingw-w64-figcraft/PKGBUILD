@@ -1,0 +1,51 @@
+# Maintainer: Konstantin Podsvirov <konstantin@podsvirov.su>
+
+_realname=figcraft
+pkgbase=mingw-w64-${_realname}
+pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
+pkgver=0.6.0
+pkgrel=1
+pkgdesc="Clean-room reimplementation of collaborative design workflows in pure Rust (mingw-w64)"
+arch=('any')
+mingw_arch=('ucrt64' 'clang64' 'clangarm64')
+url='https://getartcraft.com/apps/figcraft'
+msys2_repository_url='https://github.com/storytold/figcraft'
+license=('spdx:MIT OR Apache-2.0')
+makedepends=("${MINGW_PACKAGE_PREFIX}-hicolor-icon-theme")
+makedepends=("${MINGW_PACKAGE_PREFIX}-rust")
+source=("${msys2_repository_url}/archive/v${pkgver}/${_realname}-${pkgver}.tar.gz")
+sha256sums=('130421efbf4e824f55f6b71b5119a817a9e10effae582e5d98944fe79c7e4d2b')
+
+prepare() {
+  cd "${_realname}-${pkgver}"
+
+  # if cargo wants to make an http request at build stage, use `cargo fetch --locked` instead
+  cargo fetch --locked --target "${RUST_CHOST}"
+}
+
+build() {
+  cd "${_realname}-${pkgver}"
+
+  cargo build --release --frozen
+}
+
+check() {
+  cd "${_realname}-${pkgver}"
+
+  cargo test --release --frozen
+}
+
+package() {
+  cd "${_realname}-${pkgver}"
+
+  install -Dm0755 -t "${pkgdir}${MINGW_PREFIX}/bin/" target/release/${_realname}{,-cli,-server}.exe
+  install -Dm0644 -t "${pkgdir}${MINGW_PREFIX}/share/applications/" "packaging/linux/ai.storyteller.${_realname}.desktop"
+  install -Dm0644 -t "${pkgdir}${MINGW_PREFIX}/share/mime/packages/" "packaging/linux/ai.storyteller.${_realname}.mime.xml"
+  install -Dm0644 -t "${pkgdir}${MINGW_PREFIX}/share/icons/hicolor/scalable/" assets/app-icon/hicolor/scalable/apps/ai.storyteller.${_realname}.svg
+  for s in 512 256 128 64 48 32 16; do
+    local dim="${s}x${s}"
+    install -Dm0644 -t "${pkgdir}${MINGW_PREFIX}/usr/share/icons/hicolor/${dim}/apps/" assets/app-icon/hicolor/${dim}/apps/ai.storyteller.${_realname}.png
+  done
+
+  install -Dm644 -t "${pkgdir}${MINGW_PREFIX}/share/licenses/${_realname}/" LICENSE-{MIT,APACHE}
+}
