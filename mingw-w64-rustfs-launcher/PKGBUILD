@@ -3,7 +3,7 @@
 _realname=rustfs-launcher
 pkgbase=mingw-w64-${_realname}
 pkgname=("${MINGW_PACKAGE_PREFIX}-${_realname}")
-_pkgver=1.0.1
+_pkgver=1.0.2
 pkgver=${_pkgver//-/_}
 pkgrel=1
 pkgdesc="A simple launcher for RustFS (mingw-w64)"
@@ -27,7 +27,7 @@ makedepends=(
 source=("${msys2_repository_url}/archive/${_pkgver}/launcher-${_pkgver}.tar.gz"
         '0001-launcher-0.0.4-system-candidate.patch'
         '0003-launcher-1.0.0-rc.6-disable-updates.patch')
-sha256sums=('41cd73c2afb97f344a36a907125b7a9554358347b2ceb2f64793553b433048b5'
+sha256sums=('98fea6a2a60b14990080bf5934ad20813681e7ada997aeb8812cabc37c9de42d'
             '4cdc7f58af29881c975843db501b8af306cade885cd79f547c66cb2a3e889155'
             '223904b1c3e157ad1490fe5d2f35de92511e2d2ddca9d3ead70fba5ae1873698')
 
